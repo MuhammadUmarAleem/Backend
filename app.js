@@ -13,6 +13,8 @@ var usersRouter = require("./routes");
 var SignUpRouter = require("./routes/SignUp");
 var SignUpBusinessRouter = require("./routes/SignUpBusiness");
 var loginRouter = require("./routes/login");
+var GetRealmsRouter = require("./routes/GetRealms");
+var GetCompanyRouter = require("./routes/GetCompany");
 const { info } = require("console");
 
 var app = express();
@@ -55,6 +57,8 @@ app.use("", usersRouter);
 app.use("/SignUp", SignUpRouter);
 app.use("/Login", loginRouter);
 app.use("/SignUpBusiness",SignUpBusinessRouter);
+app.use("/GetRealms",GetRealmsRouter);
+app.use("/GetCompany",GetCompanyRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
