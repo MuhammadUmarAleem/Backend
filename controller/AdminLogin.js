@@ -11,7 +11,7 @@ function GenerateToken(user) {
   return token;
 }
 
-async function Login(req, response) {
+async function AdminLogin(req, response) {
   const username = req.body.username;
   const password = crypto
     .createHash("sha256")
@@ -19,8 +19,9 @@ async function Login(req, response) {
     .digest("hex");
 
   connection.query(
-    `SELECT * FROM users WHERE username='${username}' and password='${password}'`,
+    `SELECT * FROM users WHERE username='${username}' and password='${password}' and role = 1`,
     (err, res) => {
+        console.log(res);
       if (err) throw err;
       else {
         if (res.length == 0) {
@@ -40,5 +41,5 @@ async function Login(req, response) {
 }
 
 module.exports = {
-  Login,
+  AdminLogin,
 };

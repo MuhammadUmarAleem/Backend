@@ -10,12 +10,22 @@ require("./utils/database");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes");
 
-var SignUpRouter = require("./routes/SignUp");
-var SignUpBusinessRouter = require("./routes/SignUpBusiness");
+var registerRouter = require("./routes/register");
+var forgotpasswordRouter = require("./routes/forgotpassword");
+var GetProfileRouter = require("./routes/GetProfile");
 var loginRouter = require("./routes/login");
-var GetRealmsRouter = require("./routes/GetRealms");
-var GetCompanyRouter = require("./routes/GetCompany");
+var UpdateProfileRouter = require("./routes/UpdateProfile");
+var SubscribeRouter = require("./routes/Subscribe");
+var GetUsersRouter = require("./routes/GetUsers");
+var LotteryRouter = require("./routes/Lottery");
+var GetLotteryRouter = require("./routes/GetLottery");
+var GetPlansRouter = require("./routes/GetPlans");
+var UpdateUserRouter = require("./routes/UpdateUser");
+var DeleteUserRouter = require("./routes/DeleteUser");
+var AdminLoginRouter = require("./routes/AdminLogin");
+var PlanRouter = require("./routes/Plan");
 const { info } = require("console");
+const { GetUsers } = require("./controller/GetUsers");
 
 var app = express();
 app.use(cors());
@@ -54,11 +64,20 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("", usersRouter);
 // Users
-app.use("/SignUp", SignUpRouter);
-app.use("/Login", loginRouter);
-app.use("/SignUpBusiness",SignUpBusinessRouter);
-app.use("/GetRealms",GetRealmsRouter);
-app.use("/GetCompany",GetCompanyRouter);
+app.use("/register", registerRouter);
+app.use("/forgotpassword", forgotpasswordRouter);
+app.use("/GetProfile", GetProfileRouter);
+app.use("/login", loginRouter);
+app.use("/GetUsers", GetUsersRouter);
+app.use("/UpdateProfile", UpdateProfileRouter);
+app.use("/GetPlans", GetPlansRouter);
+app.use("/Subscribe", SubscribeRouter);
+app.use("/Plan", PlanRouter);
+app.use("/DeleteUser", DeleteUserRouter);
+app.use("/AdminLogin", AdminLoginRouter);
+app.use("/updateUser", UpdateUserRouter);
+app.use("/GetLottery", GetLotteryRouter);
+app.use("/Lottery", LotteryRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

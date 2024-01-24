@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
-const controller = require("../controller/SignUp");
+const controller = require("../controller/GetPlans");
 
-router.post("/", controller.SignUp);
+router.get("/", controller.GetPlans);
 
 module.exports = router;

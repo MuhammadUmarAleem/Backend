@@ -1,24 +1,24 @@
 const { connection } = require("../utils/database");
-async function GetRealms(req, response) {
+
+async function GetUsers(req, response) {
   try {
     connection.query(
-      `SELECT realms.*
-      FROM realms
-      JOIN companies ON realms.company_id = companies.id;
-      `,
+      `SELECT * FROM users`,
       (err, res) => {
         if (err) {
+            console.log(err)
           return;
         } else {
+          console.log(res);
           return response.status(200).json({ data: res });
         }
       }
     );
   } catch (err) {
-    logs.log(err, "/GetRealms");
+    console.log(err, "user", "/GetUsers");
   }
 }
 
 module.exports = {
-  GetRealms,
+    GetUsers,
 };
