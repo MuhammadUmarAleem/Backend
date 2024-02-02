@@ -12,14 +12,18 @@ function GenerateToken(user) {
 }
 
 async function Login(req, response) {
-  const username = req.body.username;
+  console.log(req.body.email,req.body.password)
+  const email = req.body.email;
   const password = crypto
     .createHash("sha256")
     .update(req.body.password)
     .digest("hex");
 
   connection.query(
-    `SELECT * FROM users WHERE username='${username}' and password='${password}'`,
+    `
+    SELECT id,email FROM users 
+    WHERE email='${email}' AND password='${password}'
+    `,
     (err, res) => {
       if (err) throw err;
       else {
@@ -30,7 +34,6 @@ async function Login(req, response) {
           return response.status(200).json({
             message: "success",
             email: res[0].email,
-            username: res[0].username,
             token: token,
           });
         }

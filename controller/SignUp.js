@@ -1,26 +1,36 @@
 const strftime = require("strftime");
 const crypto = require("crypto");
 const { connection } = require("../utils/database");
-const emailer = require("./sendEmail");
 const { serialize } = require("cookie");
 
-async function Subscribe(req, response) {
-  const email = req.query.email;
+async function SignUp(req, response) {
+  const firstname = req.body.firstname;
+  const lastname = req.body.lastname;
+  const email = req.body.email;
+  const password = crypto
+    .createHash("sha256")
+    .update(req.body.password)
+    .digest("hex");
   const now = new Date();
-  const CreatedAt = strftime("%Y-%m-%d %H:%M:%S", now);
+  const dateCreated = strftime("%Y-%m-%d %H:%M:%S", now);
 
   const data = {
+    firstname: firstname,
+    lastname: lastname,
     email: email,
-    CreatedAt: CreatedAt,
+    password: password,
+    createdAt: dateCreated,
+    updatedAt: dateCreated,
+    active: true,
   };
 
   connection.query(
-    `SELECT * FROM subscribe WHERE email='${email}'`,
+    `SELECT * FROM users WHERE email='${email}'`,
     (err, res) => {
       if (err) throw err;
       else {
         if (res.length == 0) {
-          connection.query("INSERT INTO subscribe SET ?", data, (err, res) => {
+          connection.query("INSERT INTO users SET ?", data, (err, res) => {
             if (err) throw err;
             else {
               response.status(200).json({ message: [email] });
@@ -35,5 +45,5 @@ async function Subscribe(req, response) {
 }
 
 module.exports = {
-  Subscribe,
+  SignUp,
 };
