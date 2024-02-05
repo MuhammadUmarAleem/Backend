@@ -22,7 +22,7 @@ async function Login(req, response) {
   connection.query(
     `
     SELECT id,email FROM users 
-    WHERE email='${email}' AND password='${password}'
+    WHERE email='${email}' AND password='${password}' and active = true
     `,
     (err, res) => {
       if (err) throw err;

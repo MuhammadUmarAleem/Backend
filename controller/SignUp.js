@@ -2,6 +2,7 @@ const strftime = require("strftime");
 const crypto = require("crypto");
 const { connection } = require("../utils/database");
 const { serialize } = require("cookie");
+const emailer = require("./sendEmail");
 
 async function SignUp(req, response) {
   const firstname = req.body.firstname;
@@ -21,7 +22,7 @@ async function SignUp(req, response) {
     password: password,
     createdAt: dateCreated,
     updatedAt: dateCreated,
-    active: true,
+    active: false,
   };
 
   connection.query(
@@ -33,7 +34,31 @@ async function SignUp(req, response) {
           connection.query("INSERT INTO users SET ?", data, (err, res) => {
             if (err) throw err;
             else {
-              response.status(200).json({ message: [email] });
+              // Generate a random verification code and send it via email
+              const code = emailer.generateRandomNumber();
+              const subject = "Verify Your Account";
+              const body = `<p>Dear User!<p><p> Thanks for your interest in Wise Way. To create your account, verify your email. Your Verification Code is <br/> <center><h1>${code}</h1></center>`;
+              
+              // Function to send the verification email
+              async function send() {
+                const responseData = await emailer.sendEmail(
+                  email,
+                  subject,
+                  body
+                );
+                // Hash the verification code for security
+                console.log('send email')
+                const hashed = crypto
+                  .createHash("sha256")
+                  .update(code.toString())
+                  .digest("hex");
+                // Send a response with success message and hashed code
+                response
+                  .status(200)
+                  .json({ message: "sent", email: email, code: hashed });
+              }
+              // Call the send function
+              send();
             }
           });
         } else {

@@ -11,6 +11,7 @@ async function AddEvent(req, response) {
     const location = req.body.location;
     const date = req.body.date;
     const email = req.query.email;
+    const description = req.body.description;
     // Get the current date and time
     const now = new Date();
     const dateCreated = strftime("%Y-%m-%d %H:%M:%S", now);
@@ -27,6 +28,7 @@ async function AddEvent(req, response) {
           // Prepare data for inserting into the 'course' table
           const data = {
             title: title,
+            description: description,
             image: image,
             location: location,
             date: date,

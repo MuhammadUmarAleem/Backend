@@ -15,6 +15,8 @@ var LoginRouter = require("./routes/Login");
 var GetEventsRouter = require("./routes/GetEvents");
 var AddEventRouter = require("./routes/AddEvent");
 var GetLocationsRouter = require("./routes/GetLocations");
+var VerifyRouter = require("./routes/Verify");
+var GetEventDetailRouter = require("./routes/GetEventDetail");
 const { info } = require("console");
 
 var app = express();
@@ -59,6 +61,8 @@ app.use("/Login", LoginRouter);
 app.use("/AddEvent", AddEventRouter);
 app.use("/GetEvents", GetEventsRouter);
 app.use("/GetLocations", GetLocationsRouter);
+app.use("/Verify", VerifyRouter);
+app.use("/GetEventDetail", GetEventDetailRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
