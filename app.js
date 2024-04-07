@@ -12,21 +12,7 @@ var usersRouter = require("./routes");
 
 var SignUpRouter = require("./routes/SignUp");
 var LoginRouter = require("./routes/Login");
-var GetProfileRouter = require("./routes/GetProfile");
-var UpdateProfileRouter = require("./routes/UpdateProfile");
-var AddInsuranceRouter = require("./routes/AddInsurance");
-var AddServiceRouter = require("./routes/AddService");
-var AddInformtionRouter = require("./routes/AddInformtion");
-var GetInformationRouter = require("./routes/GetInformation");
-var GetServiceRouter = require("./routes/GetService");
-var GetInsuranceRouter = require("./routes/GetInsurance");
-var DeleteInsuranceRouter = require("./routes/DeleteInsurance");
-var DeleteInformationRouter = require("./routes/DeleteInformation");
-var DeleteServiceRouter = require("./routes/DeleteService");
-var GetOpeningHoursRouter = require("./routes/GetOpeningHours");
-var UpdateOpeningHoursRouter = require("./routes/UpdateOpeningHours");
-var UpdateDescriptionRouter = require("./routes/UpdateDescription");
-var UpdateLogoRouter = require("./routes/UpdateLogo");
+
 const { info } = require("console");
 
 var app = express();
@@ -68,21 +54,7 @@ app.use("", usersRouter);
 // Users
 app.use("/SignUp", SignUpRouter);
 app.use("/Login", LoginRouter);
-app.use("/GetProfile", GetProfileRouter);
-app.use("/UpdateProfile", UpdateProfileRouter);
-app.use("/AddInsurance", AddInsuranceRouter);
-app.use("/AddService", AddServiceRouter);
-app.use("/AddInformtion", AddInformtionRouter);
-app.use("/GetInformation", GetInformationRouter);
-app.use("/GetService", GetServiceRouter);
-app.use("/GetInsurance", GetInsuranceRouter);
-app.use("/DeleteInsurance", DeleteInsuranceRouter);
-app.use("/DeleteInformation", DeleteInformationRouter);
-app.use("/DeleteService", DeleteServiceRouter);
-app.use("/GetOpeningHours", GetOpeningHoursRouter);
-app.use("/UpdateOpeningHours", UpdateOpeningHoursRouter);
-app.use("/UpdateDescription", UpdateDescriptionRouter);
-app.use("/UpdateLogo", UpdateLogoRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

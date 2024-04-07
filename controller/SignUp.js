@@ -1,142 +1,40 @@
-const strftime = require("strftime");
+const crypto = require("crypto");
 const { connection } = require("../utils/database");
-const multer = require("multer");
-const storage = require("../utils/multer");
-const crypto = require("crypto"); // Import the storage configuration
 
-// Set up multer with the imported storage configuration
-const upload = multer({ storage: storage });
-
-// Function to add inventory
 async function SignUp(req, response) {
-  try {
-    // Multer middleware for handling file upload
-    upload.single("image")(req, response, function (err) {
-      if (err) {
-        console.log(err);
-        return response.status(500).json({ message: "File upload failed" });
-      }
+  const Email = req.body.Email;
+  const Username = req.body.Username;
+  const Password = crypto
+    .createHash("sha256")
+    .update(req.body.Password)
+    .digest("hex");
 
-      // Extract data from the request
-      const companylogo = req.file.filename;
-      const companyname = req.body.companyname;
-      const postcode = req.body.postcode;
-      const location = req.body.location;
-      const street = req.body.street;
-      const housenumber = req.body.housenumber;
-      const telephonenumber = req.body.telephonenumber;
-      var ownergender = 0;
-
-      if (req.query.ownergender === "true") {
-        ownergender = 1;
-      }
-
-      const ownerfirstname = req.body.ownerfirstname;
-      const ownerlastname = req.body.ownerlastname;
-      const email = req.body.email;
-      const password = crypto
-      .createHash("sha256")
-      .update(req.body.password)
-      .digest("hex");
-      // Get the current date and time
-      const now = new Date();
-      const dateCreated = strftime("%Y-%m-%d %H:%M:%S", now);
-
-      connection.query(
-        `SELECT * FROM Companies WHERE Email='${email}'`,
-        (err, res) => {
-          if (err) {
-            // Log an error if there's an issue with the database query
-            console.log(err);
-            return;
-          } else {
-            if (res.length == 0) {
-              // Prepare data for inserting into the 'course' table
-              const data = {
-                CompanyName: companyname,
-                CompanyLogo: companylogo,
-                PostCode: postcode,
-                Location: location,
-                Street: street,
-                HouseNumber: housenumber,
-                TelephoneNumber: telephonenumber,
-                OwnerGender: ownergender,
-                OwnerFirstName: ownerfirstname,
-                OwnerLastName: ownerlastname,
-                Email: email,
-                Password: password,
-                CreatedAt: dateCreated,
-                UpdatedAt: dateCreated,
-                Active: true,
-              };
-
-              // Insert data into the 'course' table
-              connection.query(
-                "INSERT INTO Companies SET ?",
-                data,
-                (err, res) => {
-                  if (err) {
-                    // Log an error if there's an issue with the database query
-                    console.log("error2");
-                    console.log(err);
-                    return;
-                  } else {
-                    // console.log("done");
-                    // return response.status(200).json({ message: "added" });
-                    connection.query(
-                      `SELECT * FROM Companies WHERE Email='${email}'`,
-                      (err, res) => {
-                        if (err) {
-                          // Log an error if there's an issue with the database query
-                          console.log(err);
-                          return;
-                        } else {
-                          const companyId = res[0].Id;
-                          connection.query(
-                            ` INSERT INTO OpeningHours (CompanyId, Day, Time1, Time2)
-                            VALUES
-                            (${companyId}, 'Monday', '--', '--'),
-                            (${companyId}, 'Tuesday', '--', '--'),
-                            (${companyId}, 'Wednesday', '--', '--'),
-                            (${companyId}, 'Thursday', '--', '--'),
-                            (${companyId}, 'Friday', '--', '--'),
-                            (${companyId}, 'Saturday', '--', '--'),
-                            (${companyId}, 'Sunday', '--', '--');
-                            `,
-                            (err, res) => {
-                              if (err) {
-                                // Log an error if there's an issue with the database query
-                                console.log("error2");
-                                console.log(err);
-                                return;
-                              } else {
-                                console.log("done");
-                                return response.status(200).json({ message: "added" });
-                              }
-                            }
-                          );
-                        }
-                      }
-                    )
-                  }
-                }
-              );
-            } else {
-              console.log("already");
-              return response.status(200).json({ message: "already" });
-            }
+  const data = {
+    Email: Email,
+    Username: Username,
+    Password: Password,
+    Active: true,
+  };
+console.log(data)
+  connection.query(`SELECT * FROM Users WHERE Email='${Email}'`, (err, res) => {
+    if (err) throw err;
+    else {
+      if (res.length == 0) {
+        connection.query("INSERT INTO Users SET ?", data, (err, res) => {
+          if (err) throw err;
+          else {
+            response
+              .status(200)
+              .json({ message: "sent", Email: Email});
           }
-        }
-      );
-    });
-  } catch (err) {
-    // Log an error if there's an exception in the try block
-    console.log(err, "/SignUp");
-    return response.status(500).json({ message: "Internal server error" });
-  }
+        });
+      } else {
+        response.status(200).json({ message: "already" });
+      }
+    }
+  });
 }
 
-// Export the function for external use
 module.exports = {
   SignUp,
 };

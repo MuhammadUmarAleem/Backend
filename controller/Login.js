@@ -4,26 +4,25 @@ const { connection } = require("../utils/database");
 
 function GenerateToken(user) {
   const payload = {
-    // role: user.role,
-    id: user.Id,
-    email: user.Email
+    Email: user.Email,
+    Id: user.Id,
   };
   const token = jwt.sign(payload, "123456asdfghjkljasjdhgasdyt6rt2376tuasgd");
   return token;
 }
 
 async function Login(req, response) {
-  console.log(req.query.email,req.query.password)
-  const email = req.query.email;
-  const password = crypto
+  console.log(req.body.Username,req.body.Password)
+  const Username = req.body.Username;
+  const Password = crypto
     .createHash("sha256")
-    .update(req.query.password)
+    .update(req.body.Password)
     .digest("hex");
 
   connection.query(
     `
-    SELECT Id,Email FROM Companies 
-    WHERE Email='${email}' AND Password='${password}' and Active = true
+    SELECT Id,Email FROM Users 
+    WHERE Username='${Username}' AND Password='${Password}' and Active = true
     `,
     (err, res) => {
       if (err) throw err;
