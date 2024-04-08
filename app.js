@@ -12,6 +12,8 @@ var usersRouter = require("./routes");
 
 var SignUpRouter = require("./routes/SignUp");
 var LoginRouter = require("./routes/Login");
+var BotRouter = require("./routes/Bot");
+var GetBotDateRouter = require("./routes/GetBotDate");
 
 const { info } = require("console");
 
@@ -54,6 +56,8 @@ app.use("", usersRouter);
 // Users
 app.use("/SignUp", SignUpRouter);
 app.use("/Login", LoginRouter);
+app.use("/Bot", BotRouter);
+app.use("/GetBotDate", GetBotDateRouter);
 
 
 // catch 404 and forward to error handler
