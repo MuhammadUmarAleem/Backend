@@ -14,6 +14,8 @@ var SignUpRouter = require("./routes/SignUp");
 var LoginRouter = require("./routes/Login");
 var BotRouter = require("./routes/Bot");
 var GetBotDateRouter = require("./routes/GetBotDate");
+var GetLatestWithdrawalsRouter = require("./routes/GetLatestWithdrawals");
+var GetUserDataRouter = require("./routes/GetUserData");
 
 const { info } = require("console");
 
@@ -58,6 +60,8 @@ app.use("/SignUp", SignUpRouter);
 app.use("/Login", LoginRouter);
 app.use("/Bot", BotRouter);
 app.use("/GetBotDate", GetBotDateRouter);
+app.use("/GetLatestWithdrawals", GetLatestWithdrawalsRouter);
+app.use("/GetUserData", GetUserDataRouter);
 
 
 // catch 404 and forward to error handler
