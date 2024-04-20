@@ -21,7 +21,7 @@ async function Login(req, response) {
 
   connection.query(
     `
-    SELECT Id,Email FROM Users 
+    SELECT Id,Email,Role FROM Users 
     WHERE Username='${Username}' AND Password='${Password}' and Active = true
     `,
     (err, res) => {
@@ -34,6 +34,7 @@ async function Login(req, response) {
           return response.status(200).json({
             message: "success",
             email: res[0].Email,
+            role: res[0].Role,
             token: token,
           });
         }
