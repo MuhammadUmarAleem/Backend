@@ -18,6 +18,9 @@ var GetLatestWithdrawalsRouter = require("./routes/GetLatestWithdrawals");
 var GetUserDataRouter = require("./routes/GetUserData");
 var GetAllBotsRouter = require("./routes/GetAllBots");
 var DeleteBotRouter = require("./routes/DeleteBot");
+var WithdrawRouter = require("./routes/Withdraw");
+var GetWithdrawHistoryRouter = require("./routes/GetWithdrawHistory");
+var GetAdminWithdrawRouter = require("./routes/GetAdminWithdraw");
 
 const { info } = require("console");
 
@@ -66,6 +69,9 @@ app.use("/GetLatestWithdrawals", GetLatestWithdrawalsRouter);
 app.use("/GetUserData", GetUserDataRouter);
 app.use("/GetAllBots", GetAllBotsRouter);
 app.use("/DeleteBot", DeleteBotRouter);
+app.use("/Withdraw", WithdrawRouter);
+app.use("/GetWithdrawHistory", GetWithdrawHistoryRouter);
+app.use("/GetAdminWithdraw", GetAdminWithdrawRouter);
 
 
 // catch 404 and forward to error handler
