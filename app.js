@@ -21,6 +21,12 @@ var DeleteBotRouter = require("./routes/DeleteBot");
 var WithdrawRouter = require("./routes/Withdraw");
 var GetWithdrawHistoryRouter = require("./routes/GetWithdrawHistory");
 var GetAdminWithdrawRouter = require("./routes/GetAdminWithdraw");
+var AddPositionsRouter = require("./routes/AddPositions");
+var GetPositionsRouter = require("./routes/GetPositions");
+var DeletePositionRouter = require("./routes/DeletePosition");
+var GetBalanceRouter = require("./routes/GetBalance");
+var UpdateBalanceRouter = require("./routes/UpdateBalance");
+var GetUserPositionRouter = require("./routes/GetUserPosition");
 
 const { info } = require("console");
 
@@ -72,6 +78,12 @@ app.use("/DeleteBot", DeleteBotRouter);
 app.use("/Withdraw", WithdrawRouter);
 app.use("/GetWithdrawHistory", GetWithdrawHistoryRouter);
 app.use("/GetAdminWithdraw", GetAdminWithdrawRouter);
+app.use("/AddPositions", AddPositionsRouter);
+app.use("/GetPositions", GetPositionsRouter);
+app.use("/DeletePosition", DeletePositionRouter);
+app.use("/GetBalance", GetBalanceRouter);
+app.use("/UpdateBalance", UpdateBalanceRouter);
+app.use("/GetUserPosition", GetUserPositionRouter);
 
 
 // catch 404 and forward to error handler
