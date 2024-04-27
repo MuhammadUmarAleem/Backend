@@ -18,13 +18,18 @@ async function AddPositions(req, response) {
         `, (err, respo) => {
             if (err) throw err;
             else {
+              var Position = 0
+              console.log(respo[0].Count)
+              if(respo[0].Count === null){
+                Position = 0
+              }
                 const data = {
                     UserId: UserId,
                     Assets: Assets,
                     ProfitLoss: ProfitLoose,
                     EntryPoint: EntryPoint,
                     Size: Size,
-                    Position: parseInt(respo[0].Count) + 1,
+                    Position: Position + 1,
                   };
                 console.log(data)
                 connection.query("INSERT INTO Positions SET ?", data, (err, res) => {
