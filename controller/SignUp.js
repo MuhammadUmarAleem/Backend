@@ -16,7 +16,7 @@ async function SignUp(req, response) {
     Active: true,
   };
 console.log(data)
-  connection.query(`SELECT * FROM Users WHERE Email='${Email}'`, (err, res) => {
+  connection.query(`SELECT * FROM Users WHERE Email='${Email}' or Username='${Username}'`, (err, res) => {
     if (err) throw err;
     else {
       if (res.length == 0) {

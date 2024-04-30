@@ -12,10 +12,19 @@ async function Bot(req, response) {
           Amount: Amount,
           UserId: res[0].Id,
         };
+        const newBotCredit = parseFloat(res[0].BotCredit) - parseFloat(data.Amount)
         connection.query("INSERT INTO Bot SET ?", data, (err, res) => {
           if (err) throw err;
           else {
-            response.status(200).json({ message: "okay" });
+            connection.query(`UPDATE Users
+            SET BotCredit = '${newBotCredit}'
+            WHERE Id = ${data.UserId};
+            `, (err, res) => {
+              if (err) throw err;
+              else {
+                response.status(200).json({ message: "okay" });
+              }
+            });
           }
         });
       } else {

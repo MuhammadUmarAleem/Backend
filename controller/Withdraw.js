@@ -17,10 +17,19 @@ async function Withdraw(req, response) {
           UserId: res[0].Id,
         };
         console.log(data);
+        const newBotCredit = parseFloat(res[0].CashoutCredit) - parseFloat(data.Amount)
         connection.query("INSERT INTO Withdraw SET ?", data, (err, res) => {
           if (err) throw err;
           else {
-            response.status(200).json({ message: "okay" });
+            connection.query(`UPDATE Users
+            SET CashoutCredit = '${newBotCredit}'
+            WHERE Id = ${data.UserId};
+            `, (err, res) => {
+              if (err) throw err;
+              else {
+                response.status(200).json({ message: "okay" });
+              }
+            });
           }
         });
       } else {
