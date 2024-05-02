@@ -106,4 +106,78 @@ app.use(function (err, req, res, next) {
   res.render("error");
 });
 
+
+
+
+
+const cron = require('node-cron');
+const mysql = require('mysql');
+
+// Create a MySQL connection pool
+const pool = mysql.createPool({
+    host: process.env.MYSQL_ADDON_HOST,
+    user: process.env.MYSQL_ADDON_USER,
+    password: process.env.MYSQL_ADDON_PASSWORD,
+    database: process.env.MYSQL_ADDON_DB
+});
+
+// Function to generate random user names with three characters from 'a' to 'z'
+const generateRandomUserName = () => {
+  let prefix = '';
+  for (let i = 0; i < 3; i++) {
+      const randomCharCode = Math.floor(Math.random() * 26) + 97; // Generate a random character code from 'a' to 'z'
+      prefix += String.fromCharCode(randomCharCode); // Convert the character code to a character and append to the prefix
+  }
+  const suffix = Math.floor(Math.random() * 10000); // Generate a random 4-digit number
+  return `${prefix}****${suffix}`; // Combine prefix, asterisks, and suffix
+};
+
+
+// Function to generate random amount
+const generateRandomAmount = () => {
+    return (Math.random() * 1000).toFixed(2); // Generate a random amount between 0 and 1000 with 2 decimal places
+};
+
+// Function to insert random data into the temp table
+const insertRandomData = () => {
+    const user = generateRandomUserName();
+    const amount = generateRandomAmount();
+
+    const sql = 'INSERT INTO Temp (User, Amount) VALUES (?, ?)';
+    const values = [user, amount];
+
+    pool.query(sql, values, (error, results) => {
+        if (error) {
+            console.error('Error inserting data:', error);
+        } else {
+            console.log('Inserted random data successfully:', results.insertId);
+        }
+    });
+};
+
+// Function to remove the row with the minimum Id from the temp table
+const removeRowWithMinId = () => {
+  const sql = 'DELETE FROM Temp WHERE Id = (SELECT Id FROM (SELECT MIN(Id) AS Id FROM Temp) AS temp)';
+  pool.query(sql, (error, results) => {
+      if (error) {
+          console.error('Error removing row:', error);
+      } else {
+          console.log('Removed row with minimum Id successfully');
+      }
+  });
+};
+
+
+// Schedule the tasks to run after one second
+cron.schedule('*/5 * * * * *', () => {
+    insertRandomData();
+    removeRowWithMinId();
+    console.log('Tasks executed at:', new Date());
+});
+
+
+
+
+
+
 module.exports = app;

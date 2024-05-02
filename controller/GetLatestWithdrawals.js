@@ -3,11 +3,7 @@ const { connection } = require("../utils/database");
 async function GetLatestWithdrawals(req, response) {
   try {
     connection.query(
-      `SELECT Users.Username,Bot.Amount,Bot.CreatedAt 
-    FROM Bot 
-    JOIN Users ON Users.Id = Bot.UserId 
-    Where Users.Active = 1
-    ORDER BY Bot.CreatedAt DESC
+      `Select Temp.User as Username, Temp.Amount,Temp.CreatedAt  from Temp ORDER BY Temp.CreatedAt DESC    
     `,
       (err, res) => {
         if (err) {
