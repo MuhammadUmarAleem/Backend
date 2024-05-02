@@ -1,20 +1,16 @@
 const { connection } = require("../utils/database");
 
-async function   DeleteBot(req, response) {
+async function   GetCoin(req, response) {
   try {
     connection.query(
-      `UPDATE Users
-      JOIN Bot ON Users.Id = Bot.UserId
-      SET Users.Active = 0
-      WHERE Bot.Id = ${req.query.Id};
-      
+      `Select * from Coin
     `,
       (err, res) => {
         if (err) {
           console.log(err);
           return;
         } else {
-            return response.status(200).json({ message: "deleted" });
+          return response.status(200).json({ data: res });
         }
       }
     );
@@ -24,5 +20,5 @@ async function   DeleteBot(req, response) {
 }
 
 module.exports = {
-  DeleteBot,
+    GetCoin,
 };

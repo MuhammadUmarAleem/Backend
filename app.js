@@ -27,6 +27,8 @@ var DeletePositionRouter = require("./routes/DeletePosition");
 var GetBalanceRouter = require("./routes/GetBalance");
 var UpdateBalanceRouter = require("./routes/UpdateBalance");
 var GetUserPositionRouter = require("./routes/GetUserPosition");
+var GetCoinRouter = require("./routes/GetCoin");
+var UpdateCoinRouter = require("./routes/UpdateCoin");
 
 const { info } = require("console");
 
@@ -84,6 +86,8 @@ app.use("/DeletePosition", DeletePositionRouter);
 app.use("/GetBalance", GetBalanceRouter);
 app.use("/UpdateBalance", UpdateBalanceRouter);
 app.use("/GetUserPosition", GetUserPositionRouter);
+app.use("/GetCoin", GetCoinRouter);
+app.use("/UpdateCoin", UpdateCoinRouter);
 
 
 // catch 404 and forward to error handler

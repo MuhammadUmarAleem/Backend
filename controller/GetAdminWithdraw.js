@@ -7,6 +7,7 @@ async function   GetAdminWithdraw(req, response) {
        Withdraw.Address as Address , Withdraw.CreatedAt as Date
     FROM Withdraw 
     JOIN Users ON Users.Id = Withdraw.UserId 
+    Where Users.Active = 1
     ORDER BY Withdraw.CreatedAt DESC
     `,
       (err, res) => {
