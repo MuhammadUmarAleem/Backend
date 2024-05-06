@@ -1,17 +1,12 @@
 const { connection } = require("../utils/database");
 
 async function AddPositions(req, response) {
-  const BotId = req.query.BotId;
+  const UserId = req.query.UserId;
   const Assets = req.query.Assets;
   const ProfitLoose = req.query.ProfitLoose;
   const EntryPoint = req.query.EntryPoint;
   const Size = req.query.Size;
-  connection.query(`SELECT Users.Id FROM Users Join Bot On Bot.UserId = Users.Id WHERE Bot.Id=${BotId}`, (err, res) => {
-    if (err) throw err;
-    else {
-      if (res.length != 0) {
-        var UserId = res[0].Id
-        connection.query(`
+  connection.query(`
         SELECT Max(Position) AS Count
         FROM Positions
         WHERE UserId = ${UserId};
@@ -39,12 +34,7 @@ async function AddPositions(req, response) {
                       }
                     });
             }
-        }); // <-- Added closing parenthesis here
-      } else {
-        response.status(200).json({ message: "already" });
-      }
-    } // <-- Added closing parenthesis here
-  });
+        });
 }
 
 module.exports = {

@@ -3,11 +3,22 @@ const { connection } = require("../utils/database");
 async function   GetAllBots(req, response) {
   try {
     connection.query(
-      `SELECT Bot.Id as Id,Users.Id as UserId ,Users.Username,Bot.Amount,Bot.CreatedAt
-    FROM Bot 
-    Right JOIN Users ON Users.Id = Bot.UserId 
-    Where Users.Active = 1
-    ORDER BY Bot.CreatedAt DESC
+      `SELECT Bot.Id as Id,
+      Users.Id as UserId,
+      Users.Username,
+      Bot.Amount,
+      Users.CreatedAt as Createdt,
+      Bot.CreatedAt as CreatedAt
+FROM Users
+LEFT JOIN (
+   SELECT UserId, MAX(Id) AS LatestBotId
+   FROM Bot
+   GROUP BY UserId
+) AS LatestBot ON Users.Id = LatestBot.UserId
+LEFT JOIN Bot ON LatestBot.LatestBotId = Bot.Id
+WHERE Users.Active = 1
+ORDER BY Users.CreatedAt DESC;
+
     `,
       (err, res) => {
         if (err) {
