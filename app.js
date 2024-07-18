@@ -10,25 +10,49 @@ require("./utils/database");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes");
 
-var SignUpRouter = require("./routes/SignUp");
+var AdminAddEmployeeRouter = require("./routes/AdminAddEmployee");
 var LoginRouter = require("./routes/Login");
-var BotRouter = require("./routes/Bot");
-var GetBotDateRouter = require("./routes/GetBotDate");
-var GetLatestWithdrawalsRouter = require("./routes/GetLatestWithdrawals");
-var GetUserDataRouter = require("./routes/GetUserData");
-var GetAllBotsRouter = require("./routes/GetAllBots");
-var DeleteBotRouter = require("./routes/DeleteBot");
-var WithdrawRouter = require("./routes/Withdraw");
-var GetWithdrawHistoryRouter = require("./routes/GetWithdrawHistory");
-var GetAdminWithdrawRouter = require("./routes/GetAdminWithdraw");
-var AddPositionsRouter = require("./routes/AddPositions");
-var GetPositionsRouter = require("./routes/GetPositions");
-var DeletePositionRouter = require("./routes/DeletePosition");
-var GetBalanceRouter = require("./routes/GetBalance");
-var UpdateBalanceRouter = require("./routes/UpdateBalance");
-var GetUserPositionRouter = require("./routes/GetUserPosition");
-var GetCoinRouter = require("./routes/GetCoin");
-var UpdateCoinRouter = require("./routes/UpdateCoin");
+var GetEmployeesRouter = require("./routes/GetEmployees");
+var GetEmployeesUsingIdRouter = require("./routes/GetEmployeesUsingId");
+var UpdateEmployeeRouter = require("./routes/UpdateEmployee");
+var DeleteEmployeeRouter = require("./routes/DeleteEmployee");
+var CreateTeamRouter = require("./routes/CreateTeam");
+var UpdateTeamRouter = require("./routes/UpdateTeam");
+var GetTeamsRouter = require("./routes/GetTeams");
+var GetTeamRouter = require("./routes/GetTeam");
+var AddAdminRouter = require("./routes/AddAdmin");
+var GetAdminsRouter = require("./routes/GetAdmins");
+var UpdateAdminRouter = require("./routes/UpdateAdmin");
+var GetProjectsRouter = require("./routes/GetProjects");
+var GetProjectRouter = require("./routes/GetProject");
+var DeleteProjectRouter = require("./routes/DeleteProject");
+var GetRequestsRouter = require("./routes/GetRequests");
+var DeleteLeaveRequestRouter = require("./routes/DeleteLeaveRequest");
+var UpdateLeaveRequestRouter = require("./routes/UpdateLeaveRequest");
+var GetAttendanceRouter = require("./routes/GetAttendance");
+var CreateProjectRouter = require("./routes/CreateProject");
+var UpdateProjectRouter = require("./routes/UpdateProject");
+var DeleteAProjectRouter = require("./routes/DeleteAProject");
+var AssignProjectRouter = require("./routes/AssignProject");
+var CreateTicketRouter = require("./routes/CreateTicket");
+var GetTicketsRouter = require("./routes/GetTickets");
+var GetTicketRouter = require("./routes/GetTicket");
+var CreateCommentRouter = require("./routes/CreateComment");
+var GetCommentsRouter = require("./routes/GetComments");
+var UpdateLeaveRequest1Router = require("./routes/UpdateLeaveRequest1");
+var GetStatsRouter = require("./routes/GetStats");
+var StartTimerRouter = require("./routes/StartTimer");
+var StopTimerRouter = require("./routes/StopTimer");
+var GetAssignedTicketsRouter = require("./routes/GetAssignedTickets");
+var GetAssignedTicketRouter = require("./routes/GetAssignedTicket");
+var CompletionRequestRouter = require("./routes/CompletionRequest");
+var UpdateProfileRouter = require("./routes/UpdateProfile");
+var CreateLeaveRequestRouter = require("./routes/CreateLeaveRequest");
+var DeleteTeamRouter = require("./routes/DeleteTeam");
+var GetDashboardRouter = require("./routes/GetDashboard");
+var GetProjectsCompletedRouter = require("./routes/GetProjectsCompleted");
+var GetPMDashboardRouter = require("./routes/GetPMDashboard");
+
 
 const { info } = require("console");
 
@@ -69,25 +93,48 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("", usersRouter);
 // Users
-app.use("/SignUp", SignUpRouter);
-app.use("/Login", LoginRouter);
-app.use("/Bot", BotRouter);
-app.use("/GetBotDate", GetBotDateRouter);
-app.use("/GetLatestWithdrawals", GetLatestWithdrawalsRouter);
-app.use("/GetUserData", GetUserDataRouter);
-app.use("/GetAllBots", GetAllBotsRouter);
-app.use("/DeleteBot", DeleteBotRouter);
-app.use("/Withdraw", WithdrawRouter);
-app.use("/GetWithdrawHistory", GetWithdrawHistoryRouter);
-app.use("/GetAdminWithdraw", GetAdminWithdrawRouter);
-app.use("/AddPositions", AddPositionsRouter);
-app.use("/GetPositions", GetPositionsRouter);
-app.use("/DeletePosition", DeletePositionRouter);
-app.use("/GetBalance", GetBalanceRouter);
-app.use("/UpdateBalance", UpdateBalanceRouter);
-app.use("/GetUserPosition", GetUserPositionRouter);
-app.use("/GetCoin", GetCoinRouter);
-app.use("/UpdateCoin", UpdateCoinRouter);
+app.use("/api/v1/superadmin/addEmployee", AdminAddEmployeeRouter);
+app.use("/api/v1/login", LoginRouter);
+app.use("/api/v1/superadmin/getEmployees", GetEmployeesRouter);
+app.use("/api/v1/superadmin/getEmployee", GetEmployeesUsingIdRouter);
+app.use("/api/v1/superadmin/updateEmployee", UpdateEmployeeRouter);
+app.use("/api/v1/superadmin/deleteEmployee", DeleteEmployeeRouter);
+app.use("/api/v1/superadmin/addteam", CreateTeamRouter);
+app.use("/api/v1/superadmin/updateTeam", UpdateTeamRouter);
+app.use("/api/v1/superadmin/getTeams", GetTeamsRouter);
+app.use("/api/v1/superadmin/getTeam", GetTeamRouter);
+app.use("/api/v1/superadmin/addAdmin", AddAdminRouter);
+app.use("/api/v1/superadmin/getAdmins", GetAdminsRouter);
+app.use("/api/v1/superadmin/updateAdmin", UpdateAdminRouter);
+app.use("/api/v1/superadmin/getProjects", GetProjectsRouter);
+app.use("/api/v1/superadmin/getProject", GetProjectRouter);
+app.use("/api/v1/superadmin/deleteProject", DeleteProjectRouter);
+app.use("/api/v1/superadmin/getRequests", GetRequestsRouter);
+app.use("/api/v1/superadmin/deleteRequest", DeleteLeaveRequestRouter);
+app.use("/api/v1/superadmin/updateRequest", UpdateLeaveRequestRouter);
+app.use("/api/v1/superadmin/getAttendance", GetAttendanceRouter);
+app.use("/api/v1/admin/addProject", CreateProjectRouter);
+app.use("/api/v1/admin/updateProject", UpdateProjectRouter);
+app.use("/api/v1/admin/deleteProject", DeleteAProjectRouter);
+app.use("/api/v1/pm/assignEmployeeToProject", AssignProjectRouter);
+app.use("/api/v1/pm/generateTicket", CreateTicketRouter);
+app.use("/api/v1/pm/getTickets", GetTicketsRouter);
+app.use("/api/v1/pm/getTicket", GetTicketRouter);
+app.use("/api/v1/pm/addComment", CreateCommentRouter);
+app.use("/api/v1/pm/getComments", GetCommentsRouter);
+app.use("/api/v1/pm/completionRequestResponse", UpdateLeaveRequest1Router);
+app.use("/api/v1/employee/dashboard", GetStatsRouter);
+app.use("/api/v1/employee/startTimer", StartTimerRouter);
+app.use("/api/v1/employee/stopTimer", StopTimerRouter);
+app.use("/api/v1/employee/getAssignedTickets", GetAssignedTicketsRouter);
+app.use("/api/v1/employee/getAssignedTicket", GetAssignedTicketRouter);
+app.use("/api/v1/employee/completionrequest", CompletionRequestRouter);
+app.use("/api/v1/employee/updateProfile", UpdateProfileRouter);
+app.use("/api/v1/employee/addRequest", CreateLeaveRequestRouter);
+app.use("/api/v1/superadmin/deleteTeam", DeleteTeamRouter);
+app.use("/api/v1/superadmin/getDashboard", GetDashboardRouter);
+app.use("/api/v1/superadmin/getProjectsCompleted", GetProjectsCompletedRouter);
+app.use("/api/v1/pm/dashboard", GetPMDashboardRouter);
 
 
 // catch 404 and forward to error handler
@@ -105,78 +152,6 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
-
-
-
-
-
-const cron = require('node-cron');
-const mysql = require('mysql');
-
-// Create a MySQL connection pool
-const pool = mysql.createPool({
-    host: process.env.MYSQL_ADDON_HOST,
-    user: process.env.MYSQL_ADDON_USER,
-    password: process.env.MYSQL_ADDON_PASSWORD,
-    database: process.env.MYSQL_ADDON_DB
-});
-
-// Function to generate random user names with three characters from 'a' to 'z'
-const generateRandomUserName = () => {
-  let prefix = '';
-  for (let i = 0; i < 3; i++) {
-      const randomCharCode = Math.floor(Math.random() * 26) + 97; // Generate a random character code from 'a' to 'z'
-      prefix += String.fromCharCode(randomCharCode); // Convert the character code to a character and append to the prefix
-  }
-  const suffix = Math.floor(Math.random() * 10000); // Generate a random 4-digit number
-  return `${prefix}****${suffix}`; // Combine prefix, asterisks, and suffix
-};
-
-
-// Function to generate random amount
-const generateRandomAmount = () => {
-    return (Math.random() * 1000).toFixed(2); // Generate a random amount between 0 and 1000 with 2 decimal places
-};
-
-// Function to insert random data into the temp table
-const insertRandomData = () => {
-    const user = generateRandomUserName();
-    const amount = generateRandomAmount();
-
-    const sql = 'INSERT INTO Temp (User, Amount) VALUES (?, ?)';
-    const values = [user, amount];
-
-    pool.query(sql, values, (error, results) => {
-        if (error) {
-            console.error('Error inserting data:', error);
-        } else {
-            console.log('Inserted random data successfully:', results.insertId);
-        }
-    });
-};
-
-// Function to remove the row with the minimum Id from the temp table
-const removeRowWithMinId = () => {
-  const sql = 'DELETE FROM Temp WHERE Id = (SELECT Id FROM (SELECT MIN(Id) AS Id FROM Temp) AS temp)';
-  pool.query(sql, (error, results) => {
-      if (error) {
-          console.error('Error removing row:', error);
-      } else {
-          console.log('Removed row with minimum Id successfully');
-      }
-  });
-};
-
-
-// Schedule the tasks to run after one second
-cron.schedule('*/5 * * * * *', () => {
-    insertRandomData();
-    removeRowWithMinId();
-    console.log('Tasks executed at:', new Date());
-});
-
-
-
 
 
 
