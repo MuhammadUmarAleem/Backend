@@ -16,7 +16,7 @@ async function StopTimer(req, res) {
       SELECT at.startTime, u.FirstName, u.LastName, u.Email 
       FROM AttendanceTimer at 
       JOIN Attendance a ON at.AttendanceId = a.Id 
-      JOIN Users u ON a.EmployeeId = u.Id 
+      JOIN Users u ON a.EmployeeId = u.ID 
       WHERE at.AttendanceId = ?`;
 
     const result = await queryDatabase(query, [attendanceId]);

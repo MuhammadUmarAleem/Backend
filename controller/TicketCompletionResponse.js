@@ -29,7 +29,7 @@ async function TicketCompletionResponse(req, res) {
             try {
                 // Retrieve ticket and employee details
                 const query = `
-                    SELECT t.Name AS TicketName, u.FirstName, u.LastName, u.Email 
+                    SELECT t.Taskname AS TicketName, u.FirstName, u.LastName, u.Email 
                     FROM Tickets t 
                     JOIN Users u ON t.EmployeeId = u.ID 
                     WHERE t.Id = ?`;

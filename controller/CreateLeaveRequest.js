@@ -49,7 +49,7 @@ async function CreateLeaveRequest(req, response) {
       text: `Dear Admin,
 
 This is to inform you that ${FirstName} ${LastName} has submitted a leave request. Below are the details:
-• Request Type: ${RequestName}
+• Request Type: ${RequestType}
 • Request Details: ${Reason}
 
 Please review and process the request at your earliest convenience.

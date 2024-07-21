@@ -1,3 +1,4 @@
+const { transporter } = require("../utils/nodemailer");
 const { connection } = require("../utils/database");
 
 async function CreateProject(req, res) {
@@ -62,9 +63,46 @@ async function CreateProject(req, res) {
       }
     }
 
+    // Get PM details from Users table
+    let pmDetails = await getUserById(PMId);
+    if (!pmDetails) {
+      throw new Error("Failed to retrieve Project Manager details");
+    }
+
+    // Get admin email from Users table where Role is SuperAdmin
+    let adminEmail = await getAdminEmail();
+    if (!adminEmail) {
+      throw new Error("SuperAdmin not found");
+    }
+
+    // Send email to the PM
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: pmDetails.Email,
+      subject: 'Project Manager Role Assigned',
+      text: `Dear ${pmDetails.FirstName} ${pmDetails.LastName},
+
+We are excited to inform you that you have been assigned the role of Project Manager for the project "${Title}".
+
+Please manage the project effectively and coordinate with your team to ensure timely completion.
+
+If you have any questions or need any assistance, please feel free to contact ${adminEmail}.
+
+Regards,
+ResoSyncer Team`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+      } else {
+        console.log('Email sent: ' + info.response);
+      }
+    });
+
     res.status(200).json({ message: "Project created successfully" });
   } catch (error) {
-    console.error("Error in CreateProjectWithClientAndMilestones function:", error);
+    console.error("Error in CreateProject function:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
@@ -114,6 +152,30 @@ async function createMilestone(data) {
         reject(err);
       } else {
         resolve(result);
+      }
+    });
+  });
+}
+
+async function getUserById(id) {
+  return new Promise((resolve, reject) => {
+    connection.query("SELECT * FROM Users WHERE ID = ?", [id], (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results[0]); // Assuming Id is unique, return the first result
+      }
+    });
+  });
+}
+
+async function getAdminEmail() {
+  return new Promise((resolve, reject) => {
+    connection.query("SELECT Email FROM Users WHERE Role = 'SuperAdmin'", (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results[0].Email); // Assuming there is at least one SuperAdmin
       }
     });
   });
