@@ -3,7 +3,7 @@ const { connection } = require("../utils/database");
 async function GetTickets(req, response) {
   try {
     connection.query(
-      `Select * from Tickets`,
+      `Select * from Tickets Join Users On Users.ID = Tickets.EmployeeId`,
       (err, res) => {
         if (err) {
           console.log(err);

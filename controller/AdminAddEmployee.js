@@ -8,7 +8,7 @@ function generatePassword() {
 
 async function AdminAddEmployee(req, res) {
   try {
-    const { Email, FirstName, LastName, Position, Contact, DOJ, Salary, CNIC, HomeAddress, GitHubUsername, BankAccountName, BankAccountNo } = req.body;
+    const { Email, FirstName, LastName, Position, Contact, DOJ, Salary, CNIC, HomeAddress, GitHubUsername, BankAccountName, BankAccountNo, TeamId } = req.body;
     const file = req.file;
 
     const Password = generatePassword();
@@ -43,7 +43,7 @@ async function AdminAddEmployee(req, res) {
 
     // Insert into Employees table
     query = "INSERT INTO Employees (UserId, TeamId, Position, Contact, DOJ, Salary, CNIC, HomeAddress, GitHubUsername, BankAccountName, BankAccountNo, ProfileImage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    let insertedEmployee = await queryDatabase(query, [UserId1, req.body.TeamId, Position, Contact, DOJ, Salary, CNIC, HomeAddress, GitHubUsername, BankAccountName, BankAccountNo, ProfileImage]);
+    let insertedEmployee = await queryDatabase(query, [UserId1, TeamId, Position, Contact, DOJ, Salary, CNIC, HomeAddress, GitHubUsername, BankAccountName, BankAccountNo, ProfileImage]);
 
     if (!insertedEmployee.insertId) {
       // Rollback user insertion if employee insertion fails
@@ -53,29 +53,40 @@ async function AdminAddEmployee(req, res) {
       return res.status(500).json({ message: "Failed to insert employee" });
     }
 
+    // Get team name from Teams table
+    query = "SELECT Title FROM Teams WHERE Id = ?";
+    let teamResult = await queryDatabase(query, [TeamId]);
+    if (teamResult.length === 0) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+    const TeamName = teamResult[0].TeamName;
+
+    // Get admin email from Users table where Role is SuperAdmin
+    query = "SELECT Email FROM Users WHERE Role = 'SuperAdmin'";
+    let adminResult = await queryDatabase(query);
+    if (adminResult.length === 0) {
+      return res.status(404).json({ message: "SuperAdmin not found" });
+    }
+    const AdminEmail = adminResult[0].Email;
+
     // Send email to the new employee
     const mailOptions = {
       from: process.env.EMAIL,
       to: Email,
-      subject: 'Welcome to Tiers Limited',
+      subject: 'Welcome to ResoSyncer - Your Login Credentials',
       text: `Dear ${FirstName} ${LastName},
 
-Welcome to Tiers Limited! We are excited to have you join our team as a ${Position}.
+Welcome to ResoSyncer! We are excited to have you on board and look forward to working with you. You have been added to the ${TeamName} team.
 
-Your account has been successfully created with the following credentials:
+Below are your login credentials:
 
-Email: ${Email}
-Password: ${Password}
+• Username: ${Email}
+• Password: ${Password}
 
-Please log in to your account using the above credentials and change your password at your earliest convenience.
+If you have any questions or need any assistance, please feel free to contact ${AdminEmail}.
 
-If you have any questions or need further assistance, feel free to reach out to your supervisor or the HR department.
-
-We look forward to your valuable contributions to our team.
-
-Best regards,
-
-Tiers Limited`
+Regards,
+ResoSyncer Team`
     };
 
     transporter.sendMail(mailOptions, (error, info) => {

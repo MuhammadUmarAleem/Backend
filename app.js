@@ -52,6 +52,8 @@ var DeleteTeamRouter = require("./routes/DeleteTeam");
 var GetDashboardRouter = require("./routes/GetDashboard");
 var GetProjectsCompletedRouter = require("./routes/GetProjectsCompleted");
 var GetPMDashboardRouter = require("./routes/GetPMDashboard");
+var TicketCompletionResponseRouter = require("./routes/TicketCompletionResponse");
+var GetEmployeeAttendanceRouter = require("./routes/GetEmployeeAttendance");
 
 
 const { info } = require("console");
@@ -123,6 +125,7 @@ app.use("/api/v1/pm/getTicket", GetTicketRouter);
 app.use("/api/v1/pm/addComment", CreateCommentRouter);
 app.use("/api/v1/pm/getComments", GetCommentsRouter);
 app.use("/api/v1/pm/completionRequestResponse", UpdateLeaveRequest1Router);
+app.use("/api/v1/pm/ticketCompletionResponse", TicketCompletionResponseRouter);
 app.use("/api/v1/employee/dashboard", GetStatsRouter);
 app.use("/api/v1/employee/startTimer", StartTimerRouter);
 app.use("/api/v1/employee/stopTimer", StopTimerRouter);
@@ -131,6 +134,7 @@ app.use("/api/v1/employee/getAssignedTicket", GetAssignedTicketRouter);
 app.use("/api/v1/employee/completionrequest", CompletionRequestRouter);
 app.use("/api/v1/employee/updateProfile", UpdateProfileRouter);
 app.use("/api/v1/employee/addRequest", CreateLeaveRequestRouter);
+app.use("/api/v1/employee/getAttendance", GetEmployeeAttendanceRouter);
 app.use("/api/v1/superadmin/deleteTeam", DeleteTeamRouter);
 app.use("/api/v1/superadmin/getDashboard", GetDashboardRouter);
 app.use("/api/v1/superadmin/getProjectsCompleted", GetProjectsCompletedRouter);

@@ -2,7 +2,7 @@ const { connection } = require("../utils/database");
 
 async function GetAssignedTickets(req, response) {
   try {
-    const Id = req.body.Id
+    const Id = req.query.id
     connection.query(
       `Select * from Tickets Where EmployeeId = ${Id}`,
       (err, res) => {
