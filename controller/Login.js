@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const { connection } = require("../utils/database");
+const User = require("../models/Users");
+const Employee = require("../models/Employees");
 
 function GenerateToken(user) {
   const payload = {
@@ -12,49 +13,48 @@ function GenerateToken(user) {
   return token;
 }
 
-async function Login(req, response) {
+async function Login(req, res) {
   const Email = req.body.Email;
   const Password = crypto
     .createHash("sha256")
     .update(req.body.Password)
     .digest("hex");
 
-  connection.query(
-    `
-    SELECT Id,Email,FirstName,LastName,Role FROM Users 
-    WHERE Email='${Email}' AND Password='${Password}' and Active = true
-    `,
-    (err, res) => {
-      if (err) throw err;
-      else {
-        if (res.length === 0) {
-          return response.status(200).json({ message: "invalid" });
-        } else {
-          connection.query(
-            `SELECT ProfileImage FROM Employees 
-    WHERE UserId = ${res[0].Id}
-          `,
-            (err, resp) => {
-              if (err) {
-                console.log(err);
-                return;
-              } else {
-                var token = GenerateToken(res);
-                return response.status(200).json({
-                  id: res[0].Id,
-                  useremail: res[0].Email,
-                  userrole: res[0].Role,
-                  userprofile: resp[0].ProfileImage,
-                  username: res[0].FirstName + " " + res[0].LastName,
-                  jsonwebtoken: token,
-                });
-              }
-            }
-          );
-        }
-      }
+  try {
+    const user = await User.findOne({
+      where: {
+        Email: Email,
+        Password: Password,
+        Active: true
+      },
+      attributes: ['Id', 'Email', 'FirstName', 'LastName', 'Role']
+    });
+
+    if (!user) {
+      return res.status(200).json({ message: "invalid" });
     }
-  );
+
+    const employee = await Employee.findOne({
+      where: {
+        UserId: user.Id
+      },
+      attributes: ['ProfileImage']
+    });
+
+    const token = GenerateToken(user);
+
+    return res.status(200).json({
+      id: user.Id,
+      useremail: user.Email,
+      userrole: user.Role,
+      userprofile: employee ? employee.ProfileImage : null,
+      username: `${user.FirstName} ${user.LastName}`,
+      jsonwebtoken: token,
+    });
+  } catch (error) {
+    console.error("Error in Login function:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }
 
 module.exports = {

@@ -1,16 +1,23 @@
-const mysql = require('mysql');
+// utils/database.js
+const { Sequelize } = require('sequelize');
 
-const connection = mysql.createConnection({
-  host: process.env.MYSQL_ADDON_HOST,
-  user: process.env.MYSQL_ADDON_USER,
-  password: process.env.MYSQL_ADDON_PASSWORD,
-  database: process.env.MYSQL_ADDON_DB,
-  port:process.env.MYSQL_ADDON_PORT,
-});
+const sequelize = new Sequelize(
+  process.env.MYSQL_ADDON_DB, 
+  process.env.MYSQL_ADDON_USER, 
+  process.env.MYSQL_ADDON_PASSWORD, 
+  {
+    host: process.env.MYSQL_ADDON_HOST,
+    port: process.env.MYSQL_ADDON_PORT,
+    dialect: 'mysql'
+  }
+);
 
-connection.connect((err) => {
-  if (err) throw err;
-  console.log('Connected to MySQL database!');
-});
+sequelize.authenticate()
+  .then(() => {
+    console.log('Connected to MySQL database!');
+  })
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
+  });
 
-module.exports={connection}
+module.exports = { sequelize };

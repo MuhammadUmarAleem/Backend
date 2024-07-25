@@ -31,7 +31,7 @@ async function GetProject(req, response) {
                                 return;
                               } else {
                                 connection.query(
-                                    `Select Distinct Users.*, Employees.* from Projects Join Tickets On Tickets.ProjectId = Projects.Id Join Employees ON Tickets.EmployeeId = Employees.Id Join Users ON Users.Id = Employees.UserId Where Projects.Id = ${Id}
+                                    `Select Distinct Users.* from Projects Join EmployeesWorking On EmployeesWorking.ProjectId = Projects.Id Join Users ON Users.ID = EmployeesWorking.EmployeeId Where Projects.Id = ${Id}
                                   `,
                                     (err, respon) => {
                                       if (err) {

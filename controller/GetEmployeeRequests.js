@@ -1,9 +1,10 @@
 const { connection } = require("../utils/database");
 
-async function GetTeams(req, response) {
+async function GetEmployeeRequests(req, response) {
+    const Id = req.query.id
   try {
     connection.query(
-      `Select Teams.*,Users.FirstName, Users.LastName from Teams Join Users ON Users.ID = Teams.LeadId`,
+      `Select * from Requests Where EmployeeId = ${Id}`,
       (err, res) => {
         if (err) {
           console.log(err);
@@ -19,5 +20,5 @@ async function GetTeams(req, response) {
 }
 
 module.exports = {
-  GetTeams,
+    GetEmployeeRequests,
 };
