@@ -6,56 +6,52 @@ var logger = require("morgan");
 const cors = require("cors");
 require("dotenv").config();
 require("./utils/database");
+const axios = require("axios");
+const cron = require("node-cron");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes");
 
-var AdminAddEmployeeRouter = require("./routes/SuperAdmin/AdminAddEmployee");
+var SignUpRouter = require("./routes/SignUp");
 var LoginRouter = require("./routes/Login");
-var GetEmployeesRouter = require("./routes/GetEmployees");
-var GetEmployeesUsingIdRouter = require("./routes/GetEmployeesUsingId");
-var UpdateEmployeeRouter = require("./routes/SuperAdmin/UpdateEmployee");
-var DeleteEmployeeRouter = require("./routes/SuperAdmin/DeleteEmployee");
-var CreateTeamRouter = require("./routes/SuperAdmin/CreateTeam");
-var UpdateTeamRouter = require("./routes/SuperAdmin/UpdateTeam");
-var GetTeamsRouter = require("./routes/GetTeams");
-var GetTeamRouter = require("./routes/GetTeam");
-var AddAdminRouter = require("./routes/SuperAdmin/AddAdmin");
-var GetAdminsRouter = require("./routes/GetAdmins");
-var UpdateAdminRouter = require("./routes/SuperAdmin/UpdateAdmin");
-var GetProjectsRouter = require("./routes/GetProjects");
-var GetProjectRouter = require("./routes/GetProject");
-var DeleteProjectRouter = require("./routes/SuperAdmin/DeleteProject");
+var GetEventsRouter = require("./routes/GetEvents");
+var AddEventRouter = require("./routes/AddEvent");
+var GetLocationsRouter = require("./routes/GetLocations");
+var VerifyRouter = require("./routes/Verify");
+var GetEventDetailRouter = require("./routes/GetEventDetail");
+var GetProfileRouter = require("./routes/GetProfile");
+var EditProfileRouter = require("./routes/EditProfile");
+var ChangePasswordRouter = require("./routes/ChangePassword");
+var GetSocialMediaRouter = require("./routes/GetSocialMedia");
+var EditSocialRouter = require("./routes/EditSocial");
+var AddChatRouter = require("./routes/AddChat");
+var GetChatRouter = require("./routes/GetChat");
+var AddMessageRouter = require("./routes/AddMessage");
+var GetMessagesRouter = require("./routes/GetMessages");
+var RequestToJoinRouter = require("./routes/RequestToJoin");
+var GetEventIdsRequestRouter = require("./routes/GetEventIdsRequest");
 var GetRequestsRouter = require("./routes/GetRequests");
-var DeleteLeaveRequestRouter = require("./routes/SuperAdmin/DeleteLeaveRequest");
-var UpdateLeaveRequestRouter = require("./routes/SuperAdmin/UpdateLeaveRequest");
-var GetAttendanceRouter = require("./routes/GetAttendance");
-var CreateProjectRouter = require("./routes/Admin/CreateProject");
-var UpdateProjectRouter = require("./routes/Admin/UpdateProject");
-var DeleteAProjectRouter = require("./routes/Admin/DeleteAProject");
-var AssignProjectRouter = require("./routes/ProjectManager/AssignProject");
-var CreateTicketRouter = require("./routes/ProjectManager/CreateTicket");
-var GetTicketsRouter = require("./routes/GetTickets");
-var GetTicketRouter = require("./routes/GetTicket");
-var CreateCommentRouter = require("./routes/ProjectManager/CreateComment");
-var GetCommentsRouter = require("./routes/GetComments");
-var UpdateLeaveRequest1Router = require("./routes/ProjectManager/UpdateLeaveRequest1");
-var GetStatsRouter = require("./routes/GetStats");
-var StartTimerRouter = require("./routes/Employee/StartTimer");
-var StopTimerRouter = require("./routes/Employee/StopTimer");
-var GetAssignedTicketsRouter = require("./routes/GetAssignedTickets");
-var GetAssignedTicketRouter = require("./routes/GetAssignedTicket");
-var CompletionRequestRouter = require("./routes/Employee/CompletionRequest");
-var UpdateProfileRouter = require("./routes/Employee/UpdateProfile");
-var CreateLeaveRequestRouter = require("./routes/Employee/CreateLeaveRequest");
-var DeleteTeamRouter = require("./routes/SuperAdmin/DeleteTeam");
-var GetDashboardRouter = require("./routes/GetDashboard");
-var GetProjectsCompletedRouter = require("./routes/GetProjectsCompleted");
-var GetPMDashboardRouter = require("./routes/GetPMDashboard");
-var TicketCompletionResponseRouter = require("./routes/ProjectManager/TicketCompletionResponse");
-var GetEmployeeAttendanceRouter = require("./routes/GetEmployeeAttendance");
-var GetEmployeeRequestsRouter = require("./routes/GetEmployeeRequests");
+var UpdateRequestStatusRouter = require("./routes/UpdateRequestStatus");
+var GetEventUsersRouter = require("./routes/GetEventUsers");
 
+var AdminSignInRouter = require("./routes/Admin/SignIn");
+var AdminGetEventsRouter = require("./routes/Admin/GetEvents");
+var AdminGetDashboardUsersRouter = require("./routes/Admin/GetDashboardUsers");
+var AdminGetUsersRouter = require("./routes/Admin/GetUsers");
+var AdminEditUserRouter = require("./routes/Admin/EditUser");
+var AdminDeleteUserRouter = require("./routes/Admin/DeleteUser");
+var AdminTemporaryDeactivateUserRouter = require("./routes/Admin/TemporaryDeactivateUser");
+var AdminActiveTemporaryDeactivatedUserRouter = require("./routes/Admin/ActiveTemporaryDeactivatedUser");
+var AdminPermanentDeactivateUserRouter = require("./routes/Admin/PermanentDeactivateUser");
+var AdminDeleteEventRouter = require("./routes/Admin/DeleteEvent");
+var AdminUpdateEventRouter = require("./routes/Admin/UpdateEvent");
+var AdminGetDashboardEventsRouter = require("./routes/Admin/GetDashboardEvents");
+var GetDashboardRouter = require("./routes/Admin/GetDashboard");
+var AdminUpdatePasswordRouter = require("./routes/Admin/UpdatePassword");
+var AdminGetEventRouter = require("./routes/Admin/GetEvent");
+var AdminGetAnalyticsDataRouter = require("./routes/Admin/GetAnalyticsData");
+var AdminGetPostsDataRouter = require("./routes/Admin/GetPostsData");
+var AdminGetUsersByCountryRouter = require("./routes/Admin/GetUsersByCountry");
 
 const { info } = require("console");
 
@@ -67,21 +63,6 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   next();
 });
-
-// function validateAPIKey(req, res, next) {
-//   const authkey =  req.header('api-key');
-//   if (authkey && crypto.createHash('sha256').update(authkey).digest('hex') == process.env.API_KEY) {
-//     next();
-//   } else {
-//     res.status(401).json({ error: 'Unauthorized Access' });
-//   }
-// }
-// app.use((req, res, next) => {
-//   if (req.path.startsWith('/images')) {
-//     return next();
-//   }
-//   validateAPIKey(req, res, next);
-// });
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -96,51 +77,57 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("", usersRouter);
 // Users
-app.use("/api/v1/superadmin/addEmployee", AdminAddEmployeeRouter);
-app.use("/api/v1/login", LoginRouter);
-app.use("/api/v1/superadmin/getEmployees", GetEmployeesRouter);
-app.use("/api/v1/superadmin/getEmployee", GetEmployeesUsingIdRouter);
-app.use("/api/v1/superadmin/updateEmployee", UpdateEmployeeRouter);
-app.use("/api/v1/superadmin/deleteEmployee", DeleteEmployeeRouter);
-app.use("/api/v1/superadmin/addteam", CreateTeamRouter);
-app.use("/api/v1/superadmin/updateTeam", UpdateTeamRouter);
-app.use("/api/v1/superadmin/getTeams", GetTeamsRouter);
-app.use("/api/v1/superadmin/getTeam", GetTeamRouter);
-app.use("/api/v1/superadmin/addAdmin", AddAdminRouter);
-app.use("/api/v1/superadmin/getAdmins", GetAdminsRouter);
-app.use("/api/v1/superadmin/updateAdmin", UpdateAdminRouter);
-app.use("/api/v1/superadmin/getProjects", GetProjectsRouter);
-app.use("/api/v1/superadmin/getProject", GetProjectRouter);
-app.use("/api/v1/superadmin/deleteProject", DeleteProjectRouter);
-app.use("/api/v1/superadmin/getRequests", GetRequestsRouter);
-app.use("/api/v1/superadmin/deleteRequest", DeleteLeaveRequestRouter);
-app.use("/api/v1/superadmin/updateRequest", UpdateLeaveRequestRouter);
-app.use("/api/v1/superadmin/getAttendance", GetAttendanceRouter);
-app.use("/api/v1/admin/addProject", CreateProjectRouter);
-app.use("/api/v1/admin/updateProject", UpdateProjectRouter);
-app.use("/api/v1/admin/deleteProject", DeleteAProjectRouter);
-app.use("/api/v1/pm/assignEmployeeToProject", AssignProjectRouter);
-app.use("/api/v1/pm/generateTicket", CreateTicketRouter);
-app.use("/api/v1/pm/getTickets", GetTicketsRouter);
-app.use("/api/v1/pm/getTicket", GetTicketRouter);
-app.use("/api/v1/pm/addComment", CreateCommentRouter);
-app.use("/api/v1/pm/getComments", GetCommentsRouter);
-app.use("/api/v1/pm/completionRequestResponse", UpdateLeaveRequest1Router);
-app.use("/api/v1/pm/ticketCompletionResponse", TicketCompletionResponseRouter);
-app.use("/api/v1/employee/dashboard", GetStatsRouter);
-app.use("/api/v1/employee/startTimer", StartTimerRouter);
-app.use("/api/v1/employee/stopTimer", StopTimerRouter);
-app.use("/api/v1/employee/getAssignedTickets", GetAssignedTicketsRouter);
-app.use("/api/v1/employee/getAssignedTicket", GetAssignedTicketRouter);
-app.use("/api/v1/employee/completionrequest", CompletionRequestRouter);
-app.use("/api/v1/employee/updateProfile", UpdateProfileRouter);
-app.use("/api/v1/employee/addRequest", CreateLeaveRequestRouter);
-app.use("/api/v1/employee/getAttendance", GetEmployeeAttendanceRouter);
-app.use("/api/v1/employee/getRequests", GetEmployeeRequestsRouter);
-app.use("/api/v1/superadmin/deleteTeam", DeleteTeamRouter);
-app.use("/api/v1/superadmin/getDashboard", GetDashboardRouter);
-app.use("/api/v1/superadmin/getProjectsCompleted", GetProjectsCompletedRouter);
-app.use("/api/v1/pm/dashboard", GetPMDashboardRouter);
+app.use("/SignUp", SignUpRouter);
+app.use("/Login", LoginRouter);
+app.use("/AddEvent", AddEventRouter);
+app.use("/GetEvents", GetEventsRouter);
+app.use("/GetLocations", GetLocationsRouter);
+app.use("/Verify", VerifyRouter);
+app.use("/GetEventDetail", GetEventDetailRouter);
+app.use("/GetProfile", GetProfileRouter);
+app.use("/EditProfile", EditProfileRouter);
+app.use("/ChangePassword", ChangePasswordRouter);
+app.use("/GetSocialMedia", GetSocialMediaRouter);
+app.use("/EditSocial", EditSocialRouter);
+app.use("/AddChat", AddChatRouter);
+app.use("/GetChat", GetChatRouter);
+app.use("/AddMessage", AddMessageRouter);
+app.use("/GetMessages", GetMessagesRouter);
+app.use("/RequestToJoin", RequestToJoinRouter);
+app.use("/GetEventIdsRequest", GetEventIdsRequestRouter);
+app.use("/GetRequests", GetRequestsRouter);
+app.use("/UpdateRequestStatus", UpdateRequestStatusRouter);
+app.use("/GetEventUsers", GetEventUsersRouter);
+
+// Admin
+app.use("/Admin/SignIn", AdminSignInRouter);
+app.use("/Admin/GetEvents", AdminGetEventsRouter);
+app.use("/Admin/GetDashboardUsers", AdminGetDashboardUsersRouter);
+app.use("/Admin/GetUsers", AdminGetUsersRouter);
+app.use("/Admin/EditUser", AdminEditUserRouter);
+app.use("/Admin/DeleteUser", AdminDeleteUserRouter);
+app.use("/Admin/TemporaryDeactivateUser", AdminTemporaryDeactivateUserRouter);
+app.use("/Admin/ActiveTemporaryDeactivatedUser", AdminActiveTemporaryDeactivatedUserRouter);
+app.use("/Admin/PermanentDeactivateUser", AdminPermanentDeactivateUserRouter);
+app.use("/Admin/DeleteEvent", AdminDeleteEventRouter);
+app.use("/Admin/UpdateEvent", AdminUpdateEventRouter);
+app.use("/Admin/GetDashboardEvents", AdminGetDashboardEventsRouter);
+app.use("/Admin/GetDashboard", GetDashboardRouter);
+app.use("/Admin/UpdatePassword", AdminUpdatePasswordRouter);
+app.use("/Admin/GetEvent", AdminGetEventRouter);
+app.use("/Admin/AnalyticsData", AdminGetAnalyticsDataRouter);
+app.use("/Admin/GetPostsData", AdminGetPostsDataRouter);
+app.use("/Admin/GetUsersByCountry", AdminGetUsersByCountryRouter);
+
+// Schedule the task to run every day at 7:46 AM UTC (which is 12:46 PM PST)
+cron.schedule("52 12 * * *", async () => {
+  try {
+    const response = await axios.put("http://localhost:4000/Admin/ActiveTemporaryDeactivatedUser");
+    console.log("Cron job executed successfully at 12:52 PM PST", response.data);
+  } catch (error) {
+    console.error("Error executing cron job:", error);
+  }
+});
 
 
 // catch 404 and forward to error handler
@@ -158,7 +145,5 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
-
-
 
 module.exports = app;

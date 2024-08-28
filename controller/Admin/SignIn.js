@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const { connection } = require("../utils/database");
+const { connection } = require("../../utils/database");
 
 function GenerateToken(user) {
   const payload = {
@@ -11,7 +11,7 @@ function GenerateToken(user) {
   return token;
 }
 
-async function Login(req, response) {
+async function SignIn(req, response) {
   console.log(req.body.email,req.body.password)
   const email = req.body.email;
   const password = crypto
@@ -21,8 +21,8 @@ async function Login(req, response) {
 
   connection.query(
     `
-    SELECT id,email, role FROM users 
-    WHERE email='${email}' AND password='${password}' and active = true and role = 0
+    SELECT id,email,role FROM users 
+    WHERE email='${email}' AND password='${password}' and active = true and role = 1
     `,
     (err, res) => {
       if (err) throw err;
@@ -44,5 +44,5 @@ async function Login(req, response) {
 }
 
 module.exports = {
-  Login,
+  SignIn,
 };
