@@ -8,6 +8,7 @@ require("dotenv").config();
 require("./utils/database");
 const axios = require("axios");
 const cron = require("node-cron");
+const nodemailer = require('nodemailer');
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes");
@@ -118,6 +119,40 @@ app.use("/Admin/GetEvent", AdminGetEventRouter);
 app.use("/Admin/AnalyticsData", AdminGetAnalyticsDataRouter);
 app.use("/Admin/GetPostsData", AdminGetPostsDataRouter);
 app.use("/Admin/GetUsersByCountry", AdminGetUsersByCountryRouter);
+
+
+
+// Nodemailer configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // You can use another email service or SMTP server
+  auth: {
+    user: process.env.EMAIL, // Your email address
+    pass: process.env.PASS, // Your email password or app password
+  },
+});
+
+// Endpoint to send email
+app.post('/send-email', (req, res) => {
+  const { from_name, from_email, message } = req.body;
+
+  const mailOptions = {
+    from: `${from_name} <${from_email}>`,
+    to: process.env.EMAIL, // Receiver's email
+    subject: 'New Message from Contact Form',
+    text: message,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('Error sending email:', error);
+      return res.status(500).send({ status: 'failed', error });
+    }
+    res.status(200).send({ status: 'success', info });
+  });
+});
+
+
+
 
 // Schedule the task to run every day at 7:46 AM UTC (which is 12:46 PM PST)
 cron.schedule("52 12 * * *", async () => {
