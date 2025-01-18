@@ -1,43 +1,48 @@
 const Message = require('../../models/Message');
 const Conversation = require('../../models/Conversation');
-const { wss } = require('../../app'); // Import the WebSocket server instance
+const { getIO } = require('../../utils/socket'); // Import the socket instance
 
 exports.SendMessage = async (req, res) => {
-    const { conversationId, sender, content } = req.body;
+  const { conversationId, sender, content, attachment } = req.body;
+  console.log(req.body);
 
-    if (!conversationId || !sender || !content) {
-        return res.status(400).json({ message: 'Conversation ID, sender, and content are required.' });
+  // Validate input
+  if (!conversationId || !sender || (!content && !attachment)) {
+    return res
+      .status(400)
+      .json({ message: 'Conversation ID, sender, and either content or attachment are required.' });
+  }
+
+
+  try {
+    // Create and save the new message
+    const messageData = { conversationId, sender, content };
+    if (attachment) {
+      messageData.attachment = attachment; // Include attachment if provided
     }
 
-    try {
-        const message = new Message({ conversationId, sender, content });
-        await message.save();
+    const message = new Message(messageData);
+    await message.save();
 
-        // Update the conversation's last message
-        await Conversation.findByIdAndUpdate(conversationId, {
-            lastMessage: content,
-            lastMessageTime: message.createdAt,
-        });
+    // Update the conversation's last message and timestamp
+    await Conversation.findByIdAndUpdate(conversationId, {
+      lastMessage: content,
+      lastMessageTime: message.createdAt,
+    });
 
-        // Emit the new message to all connected clients in the conversation's room using WebSocket
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                // Check if the client has joined the conversation's room (use a custom method for room management)
-                if (client.conversationId === conversationId) {
-                    client.send(JSON.stringify({
-                        action: 'newMessage',
-                        conversationId,
-                        sender,
-                        content,
-                        createdAt: message.createdAt,
-                    }));
-                }
-            }
-        });
+    // Emit the new message to all connected clients in the conversation's room
+    const io = getIO();
+    io.to(conversationId).emit('newMessage', {
+      conversationId,
+      sender,
+      content,
+      attachment: message.attachment || null, // Include attachment in the event data
+      createdAt: message.createdAt,
+    });
 
-        res.status(201).json({ message: 'Message sent successfully.', message });
-    } catch (error) {
-        console.error('Error sending message:', error);
-        res.status(500).json({ message: 'Internal server error', error });
-    }
+    res.status(201).json({ message: 'Message sent successfully.', data: message });
+  } catch (error) {
+    console.error('Error sending message:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
 };

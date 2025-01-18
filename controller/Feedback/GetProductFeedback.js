@@ -1,20 +1,28 @@
 const Feedback = require('../../models/Feedback');
+const Buyer = require('../../models/Buyer');
+const Seller = require('../../models/Seller');
 
 exports.GetProductFeedback = async (req, res) => {
     const { productId } = req.params;
 
     try {
-        const feedbacks = await Feedback.find({ productId })
-            .populate('buyerId', 'email role profile_Picture') // Fetch specific buyer details
-            .populate('sellerId', 'email role profile_Picture') // Fetch specific seller details
-            .populate('productId', 'productName description price'); // Fetch product details
+        // Retrieve feedbacks for the given product
+        const feedbacks = await Feedback.find({ productId }).populate('productId', 'productName description price');
 
-        // Add username slicing from email for buyers and sellers
-        const formattedFeedbacks = feedbacks.map(feedback => ({
-            ...feedback._doc, // Spread the original feedback document
-            buyerName: feedback.buyerId.email.split('@')[0], // Extract name from buyer's email
-            sellerName: feedback.sellerId.email.split('@')[0] // Extract name from seller's email
-        }));
+        // Fetch buyer and seller details for each feedback
+        const formattedFeedbacks = await Promise.all(
+            feedbacks.map(async feedback => {
+                const buyer = await Buyer.findOne({ userId: feedback.buyerId }, 'firstName lastName email');
+                const seller = await Seller.findOne({ userId: feedback.sellerId }, 'firstName lastName email businessName');
+
+                return {
+                    ...feedback._doc, // Spread the original feedback document
+                    buyerName: buyer ? `${buyer.firstName || ''} ${buyer.lastName || ''}`.trim() : 'N/A',
+                    sellerName: seller ? `${seller.firstName || ''} ${seller.lastName || ''}`.trim() : 'N/A',
+                    businessName: seller?.businessName || 'N/A'
+                };
+            })
+        );
 
         res.status(200).json({
             message: 'Feedback retrieved successfully!',

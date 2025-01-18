@@ -1,16 +1,18 @@
 const Feedback = require('../../models/Feedback');
+const Buyer = require('../../models/Buyer');
+const Seller = require('../../models/Seller');
+const User = require('../../models/User'); // Assuming the User model contains profile pictures
 
 exports.GetSellerFeedback = async (req, res) => {
     const { sellerId } = req.params;
-    const { timeFilter = 0 } = req.query; // Default to today's feedback if no timeFilter is provided
+    const { timeFilter = '0' } = req.query; // Default to today's feedback if no timeFilter is provided
 
     try {
         // Step 1: Build query with sellerId
         const query = { sellerId };
-
-        // Step 2: Determine date range based on timeFilter
         const now = new Date();
 
+        // Step 2: Determine date range based on timeFilter
         if (timeFilter === '1') {
             // No date filter
         } else if (timeFilter === '2') {
@@ -29,17 +31,28 @@ exports.GetSellerFeedback = async (req, res) => {
         }
 
         // Step 3: Fetch feedbacks matching the query
-        const feedbacks = await Feedback.find(query)
-            .populate('buyerId', 'email role profile_Picture') // Fetch specific buyer details
-            .populate('sellerId', 'email role profile_Picture') // Fetch specific seller details
-            .populate('productId', 'productName description price'); // Fetch product details
+        const feedbacks = await Feedback.find(query).populate('productId', 'productName description price');
 
-        // Step 4: Add username slicing from email for buyers and sellers
-        const formattedFeedbacks = feedbacks.map(feedback => ({
-            ...feedback._doc, // Spread the original feedback document
-            buyerName: feedback.buyerId?.email?.split('@')[0], // Extract name from buyer's email
-            sellerName: feedback.sellerId?.email?.split('@')[0] // Extract name from seller's email
-        }));
+        // Step 4: Retrieve buyer, seller, and their profile pictures
+        const formattedFeedbacks = await Promise.all(
+            feedbacks.map(async feedback => {
+                const buyer = await Buyer.findOne({ userId: feedback.buyerId }, 'firstName lastName email');
+                const seller = await Seller.findOne({ userId: feedback.sellerId }, 'firstName lastName email businessName');
+
+                // Fetch profile pictures from User table
+                const buyerUser = await User.findOne({ _id: feedback.buyerId }, 'profile_Picture');
+                const sellerUser = await User.findOne({ _id: feedback.sellerId }, 'profile_Picture');
+
+                return {
+                    ...feedback._doc, // Spread the original feedback document
+                    buyerName: buyer ? `${buyer.firstName || ''} ${buyer.lastName || ''}`.trim() : 'N/A',
+                    sellerName: seller ? `${seller.firstName || ''} ${seller.lastName || ''}`.trim() : 'N/A',
+                    businessName: seller?.businessName || 'N/A',
+                    buyerProfilePicture: buyerUser?.profile_Picture || 'default_buyer_image.png', // Fallback to default
+                    sellerProfilePicture: sellerUser?.profile_Picture || 'default_seller_image.png'  // Fallback to default
+                };
+            })
+        );
 
         // Step 5: Respond with formatted feedbacks
         res.status(200).json({

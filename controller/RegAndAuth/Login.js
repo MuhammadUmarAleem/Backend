@@ -18,6 +18,11 @@ exports.Login = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        // Check if the user is active
+        if (!user.active) {
+            return res.status(403).json({ message: 'User account is inactive. Please contact support.' });
+        }
+
         // Hash the provided password using SHA-256
         const hashedPassword = hashPassword(password);
 
@@ -41,6 +46,7 @@ exports.Login = async (req, res) => {
             profile_Picture: user.profile_Picture,
             role: user.role,
             active: user.active,
+            subscriptionId:user.subscriptionId
         };
 
         // Return the token and user details

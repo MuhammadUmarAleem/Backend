@@ -1,5 +1,7 @@
+const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../../models/User');
+const Buyer = require('../../models/Buyer');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, 'http://localhost:4000/api/v1/registerWithGoogle/callback');
 
 // Function to initiate Google Login
@@ -8,8 +10,6 @@ exports.GoogleLogin = (req, res) => {
         access_type: 'offline',
         scope: ['profile', 'email'],
     });
-
-    // Redirect the user to Google OAuth login page
     res.redirect(authUrl);
 };
 
@@ -18,11 +18,9 @@ exports.GoogleCallback = async (req, res) => {
     const code = req.query.code;
 
     try {
-        // Get the tokens using the code
         const { tokens } = await client.getToken(code);
         client.setCredentials(tokens);
 
-        // Fetch user information from Google
         const ticket = await client.verifyIdToken({
             idToken: tokens.id_token,
             audience: process.env.GOOGLE_CLIENT_ID,
@@ -31,14 +29,14 @@ exports.GoogleCallback = async (req, res) => {
         const payload = ticket.getPayload();
         const { email, name, picture } = payload;
 
-        // Check if the user already exists in the database
-        let user = await User.findOne({ email });
+        const [firstName, ...lastNameParts] = name.split(' ');
+        const lastName = lastNameParts.join(' ');
 
+        let user = await User.findOne({ email });
         if (!user) {
-            // Create a new user if they don't exist
             user = new User({
                 email,
-                password: null, // No password needed for Google OAuth users
+                password: null,
                 profile_Picture: picture,
                 role: 'Buyer',
                 active: true,
@@ -46,8 +44,31 @@ exports.GoogleCallback = async (req, res) => {
             await user.save();
         }
 
-        // Redirect the user to the home page or a success page
-        res.status(200).json({ message: 'User authenticated and registered successfully', user });
+        let buyer = await Buyer.findOne({ userId: user._id });
+        if (!buyer) {
+            buyer = new Buyer({
+                userId: user._id,
+                firstName,
+                lastName,
+            });
+            await buyer.save();
+        } else {
+            buyer.firstName = firstName;
+            buyer.lastName = lastName;
+            buyer.updatedAt = Date.now();
+            await buyer.save();
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+            expiresIn: '1h',
+        });
+
+        // Redirect to buyer page with token
+        const redirectUrl = `${process.env.FRONTEND_URL}/buyer?user=${encodeURIComponent(
+            JSON.stringify(user)
+        )}&token=${token}`;
+        res.redirect(redirectUrl);
     } catch (error) {
         console.error('Error during Google OAuth callback:', error);
         res.status(500).json({ message: 'Internal server error' });

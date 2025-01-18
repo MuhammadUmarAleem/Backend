@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true,
         maxlength: 100,
     },
     password: {
@@ -13,7 +12,7 @@ const userSchema = new mongoose.Schema({
         maxlength: 80,
         default: null,
     },
-    username: { type: String, required: true, unique: true },
+    username: { type: String, default: null, unique: true },
     profile_Picture: {
         type: String,
         maxlength: 300,
@@ -27,6 +26,12 @@ const userSchema = new mongoose.Schema({
     active: {
         type: Boolean,
         default: false,
+    },
+    subscriptionId:{
+        default:null,
+        type: String,
+        required: false,
+       
     },
     createdAt: {
         type: Date,

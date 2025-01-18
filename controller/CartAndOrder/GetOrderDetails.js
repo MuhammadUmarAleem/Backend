@@ -1,5 +1,6 @@
 const Order = require('../../models/Order');
 const mongoose = require('mongoose');
+const Buyer = require('../../models/Buyer');  // Import the Buyer model
 
 exports.GetOrderDetails = async (req, res) => {
     try {
@@ -33,6 +34,10 @@ exports.GetOrderDetails = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Order not found.' });
         }
 
+        // Fetch additional details from the Buyer model
+        const buyerDetails = await Buyer.findOne({ userId: order.buyerId._id })
+            .select('firstName lastName address'); // Fetch first name, last name, and address
+
         // Filter products belonging to the seller
         const sellerProducts = order.items.filter(item => item.productId);
 
@@ -43,6 +48,9 @@ exports.GetOrderDetails = async (req, res) => {
             buyerDetails: {
                 username: order.buyerId?.username || 'Unknown',
                 email: order.buyerId?.email || 'Unknown',
+                firstName: buyerDetails?.firstName || 'Unknown',
+                lastName: buyerDetails?.lastName || 'Unknown',
+                address: buyerDetails?.address || 'Unknown',
             },
             products: sellerProducts.map(item => ({
                 productId: item.productId._id,

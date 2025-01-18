@@ -11,9 +11,11 @@ exports.AddProduct = async (req, res) => {
         description,
         price,
         brand,
+        stock,
         keyboardLanguage,
         discount,
         memory,
+        dimensions,
         storage,
         weight,
         warranty,
@@ -29,25 +31,39 @@ exports.AddProduct = async (req, res) => {
         madeOffer,
         allowCustomization,
         images,
-        tags
+        width,
+        height,
+        depth,
+        category,
+        tags,
+        notes
     } = req.body;
+
+    console.log(req.body)
 
     try {
         // Step 1: Create the product
         const newProduct = new Product({
             productName,
             description,
-            price,
+            price:parseFloat(unitPrice),
             brand,
             keyboardLanguage,
             memory,
             discount,
+            dimensions,
+            category,
             storage,
+            stock,
             weight,
             warranty,
+            width,
+            height,
+            depth,
+            notes,
             warrantyType,
-            taxExcludedPrice,
-            taxIncludedPrice,
+            taxExcludedPrice: parseFloat(taxExcludedPrice),
+            taxIncludedPrice: parseFloat(taxIncludedPrice),
             taxRule,
             unitPrice,
             minimumOrder,

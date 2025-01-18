@@ -15,7 +15,11 @@ const messageSchema = new Schema(
         },
         content: {
             type: String,
-            required: true,
+            required: false,
+        },
+        attachment: {
+            type: String, // URL or file path for the attachment
+            required: false, // Optional field
         },
         readBy: [
             {

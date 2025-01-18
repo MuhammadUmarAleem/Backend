@@ -19,37 +19,20 @@ const axios = require("axios");
 const cron = require("node-cron");
 var app = express();
 
+const { initWebSocket } = require('./utils/socket');
+
+
 const http = require('http');
 const WebSocket = require('ws');
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws) => {
-  console.log('WebSocket connection established');
 
-  // Listen for a message from the client
-  ws.on('message', (message) => {
-      const parsedMessage = JSON.parse(message);
-      
-      // If it's a request to join a room (conversation), handle that
-      if (parsedMessage.action === 'joinRoom') {
-          const { conversationId } = parsedMessage;
-          console.log(`Client joining room: ${conversationId}`);
-          ws.conversationId = conversationId; // Store conversationId in WebSocket client
-      }
-      
-      console.log(`Received: ${message}`);
-  });
+initWebSocket(server);
 
-  // Listen for when a message is sent to the server
-  ws.on('close', () => {
-      console.log('WebSocket connection closed');
-  });
+server.listen(5000, () => {
+    console.log('Server is running on http://localhost:5000');
 });
 
-
-// Export the WebSocket server
-module.exports = { wss, server };
 
 
 app.get('/', (req, res) => {
@@ -70,6 +53,9 @@ var LoginRouter = require("./routes/RegAndAuth/Login");
 var ForgotPasswordEmailRouter = require("./routes/RegAndAuth/ForgotPasswordEmail");
 var PasswordResetSessionRouter = require("./routes/RegAndAuth/PasswordResetSession");
 var RegisterSellerRouter = require("./routes/RegAndAuth/RegisterSeller");
+var EditProfileRouter = require("./routes/RegAndAuth/EditProfile");
+var GetProfileRouter=require("./routes/RegAndAuth/GetProfile");
+
 
 //Product Listing
 var AddProductRouter = require("./routes/ProductListing/AddProduct");
@@ -84,6 +70,15 @@ var BulkUploadRouter = require("./routes/ProductListing/BulkUpload");
 var GetSellerDashboardRouter = require("./routes/ProductListing/GetSellerDashboard");
 var GetSellerWalletRouter = require("./routes/ProductListing/GetSellerWallet");
 var UpdateSellerCardRouter = require("./routes/ProductListing/UpdateSellerCard");
+var WithdrawRouter = require("./routes/ProductListing/Withdraw");
+var WishlistRouter = require("./routes/ProductListing/Wishlist");
+var ToggleProductStatusRouter = require("./routes/ProductListing/ToggleProductStatus");
+var DuplicateProductRouter = require("./routes/ProductListing/DuplicateProduct");
+var BrandRouter = require("./routes/ProductListing/Brand");
+var CategoryRouter = require("./routes/ProductListing/Category");
+var AddProductImagesRouter = require("./routes/ProductListing/AddProductImages");
+var UpdateAvailabilityRouter = require("./routes/ProductListing/UpdateAvailability");
+
 
 //SearchAndFilter
 var SearchProductsRouter = require("./routes/SearchAndFilter/SearchProducts");
@@ -94,12 +89,14 @@ var SearchAndFilterProductsRouter = require("./routes/SearchAndFilter/SearchAndF
 var AddItemToCartRouter = require("./routes/CartAndOrder/AddItemToCart");
 var GetCartRouter = require("./routes/CartAndOrder/GetCart");
 var OrderRouter = require("./routes/CartAndOrder/Order");
-var PaymentSuccessRouter = require("./routes/CartAndOrder/PaymentSuccess");
+var PaymentSuccess1Router = require("./routes/CartAndOrder/PaymentSuccess");
 var DeleteItemFromCartRouter = require("./routes/CartAndOrder/DeleteItemFromCart");
 var GetOrdersRouter = require("./routes/CartAndOrder/GetOrders");
 var GetOrderDetailsRouter = require("./routes/CartAndOrder/GetOrderDetails");
 var GetPaymentsRouter = require("./routes/CartAndOrder/GetPayments");
 var RefundProductInOrderRouter = require("./routes/CartAndOrder/RefundProductInOrder");
+var GetSellerProfileRouter = require("./routes/CartAndOrder/GetSellerProfile");
+var GetBuyerOrdersRouter = require("./routes/CartAndOrder/GetBuyerOrders");
 
 //Notifications
 var GetNotificationsRouter = require("./routes/Notifications/GetNotifications");
@@ -118,6 +115,7 @@ var AddFeedbackRouter = require("./routes/Feedback/AddFeedback");
 var GetSellerFeedbackRouter = require("./routes/Feedback/GetSellerFeedback");
 var GetProductFeedbackRouter = require("./routes/Feedback/GetProductFeedback");
 var GetSellerFilteredFeedbackRouter = require("./routes/Feedback/GetSellerFilteredFeedback");
+var GetBuyerFeedbacksRouter = require("./routes/Feedback/GetBuyerFeedbacks");
 
 // Conversation
 var StartConversationRouter = require("./routes/Conversation/StartConversation");
@@ -134,10 +132,35 @@ var SearchMessagesRouter = require("./routes/Conversation/SearchMessages");
 var GetCustomersRouter = require("./routes/GeneralCustomers/GetCustomers");
 var GetCustomersDetailsRouter = require("./routes/GeneralCustomers/GetCustomersDetails");
 
+//Admin
+var CreateUserRouter = require("./routes/Admin/CreateUser");
+var GetUsersRouter = require("./routes/Admin/GetUsers");
+var UpdateUserRouter = require("./routes/Admin/UpdateUser");
+var DeleteUserRouter = require("./routes/Admin/DeleteUser");
+var GetOrganizationsRouter = require("./routes/Admin/GetOrganizations");
+var PlansRouter = require("./routes/Admin/Plans");
+var PermissionTypesRouter = require("./routes/Admin/PermissionTypes");
+var ProgramPermissionsRouter = require("./routes/Admin/ProgramPermissions");
+var PlanAssignmentRouter = require("./routes/Admin/PlanAssignment");
+var GetAdminDashboardRouter = require("./routes/Admin/GetDashboard");
+var GetAllUsersRouter = require("./routes/Admin/GetAllUsers");
+
+//Buyer
+var EditBuyerRouter = require("./routes/Buyer/EditBuyer");
+var GetBuyerRouter = require("./routes/Buyer/GetBuyer");
+var GetBuyerDetails1Router = require("./routes/Buyer/GetBuyerDetails");
 
 
+// Subscriptions
+var GetSubscriptionRouter=require('./routes/SubscriptionPlan/GetSubscriptionPlans')
+var CreateSubscriptionRouter=require('./routes/SubscriptionPlan/AddSubscriptionPlan')
+var UpdateSubscriptionRouter=require('./routes/SubscriptionPlan/UpdateSubscriptionPlan')
+var DeleteSubscriptionRouter=require('./routes/SubscriptionPlan/DeleteSubscriptionPlan')
 
-
+var AddUserSubscriptionRouter=require("./routes/UserSubscription/AddUserSubscription")
+var PaymentSuccessRouter=require("./routes/UserSubscription/AddUserSubscription")
+//Buyer
+var EditBuyerRouter=require("./routes/Buyer/EditBuyer")
 
 app.use(cors());
 app.use((req, res, next) => {
@@ -241,6 +264,24 @@ app.use("/api/v1/login", LoginRouter);
 app.use("/api/v1/forgotPasswordEmail", ForgotPasswordEmailRouter);
 app.use("/api/v1/passwordResetSession", PasswordResetSessionRouter);
 app.use("/api/v1/register/seller", RegisterSellerRouter);
+app.use("/api/v1/editprofile", EditProfileRouter);
+app.use("/api/v1/getprofile", GetProfileRouter);
+
+
+
+
+
+
+// Subscriptions
+app.use("/api/v1/getsubscriptions", GetSubscriptionRouter);
+app.use("/api/v1/deletesubscription", DeleteSubscriptionRouter);
+app.use("/api/v1/updatesubscription", UpdateSubscriptionRouter);
+app.use("/api/v1/createsubscription", CreateSubscriptionRouter);
+app.use("/api/v1/addusersubscription", AddUserSubscriptionRouter);
+app.use("/api/v1/payment-success", AddUserSubscriptionRouter);
+
+
+
 
 // Product Listing
 app.use("/api/v1/seller/addProduct", AddProductRouter);
@@ -255,6 +296,14 @@ app.use("/api/v1/seller/bulkUpload", BulkUploadRouter);
 app.use("/api/v1/seller/getDashboard", GetSellerDashboardRouter);
 app.use("/api/v1/seller/getWallet", GetSellerWalletRouter);
 app.use("/api/v1/seller/updateCard", UpdateSellerCardRouter);
+app.use("/api/v1/seller/withdraw", WithdrawRouter);
+app.use("/api/v1/seller/wishlist", WishlistRouter);
+app.use("/api/v1/product/toogleStatus", ToggleProductStatusRouter);
+app.use("/api/v1/product/duplicate", DuplicateProductRouter);
+app.use("/api/v1/product/category", CategoryRouter);
+app.use("/api/v1/product/brand", BrandRouter);
+app.use("/api/v1/product/addimages", AddProductImagesRouter);
+app.use("/api/v1/product/updateAvailability", UpdateAvailabilityRouter);
 
 // SearchAndFilter
 app.use("/api/v1/products/search", SearchProductsRouter);
@@ -265,12 +314,14 @@ app.use("/api/v1/products/searchAndFilter", SearchAndFilterProductsRouter);
 app.use("/api/v1/cart/addItem", AddItemToCartRouter);
 app.use("/api/v1/cart/details", GetCartRouter);
 app.use("/api/v1/order/create", OrderRouter);
-app.use("/api/v1/payment/success", PaymentSuccessRouter);
+app.use("/api/v1/payment/success", PaymentSuccess1Router);
 app.use("/api/v1/payment/deleteItem", DeleteItemFromCartRouter);
 app.use("/api/v1/order/get", GetOrdersRouter);
 app.use("/api/v1/order/getDetails", GetOrderDetailsRouter);
 app.use("/api/v1/payment/get", GetPaymentsRouter);
 app.use("/api/v1/payment/refund", RefundProductInOrderRouter);
+app.use("/api/v1/seller/getProfile", GetSellerProfileRouter);
+app.use("/api/v1/buyer/getOrders", GetBuyerOrdersRouter);
 
 // Notifications
 app.use("/api/v1/notification/getnotifications", GetNotificationsRouter);
@@ -289,6 +340,7 @@ app.use("/api/v1/feedback/add", AddFeedbackRouter);
 app.use("/api/v1/feedback/getSellerFeedback", GetSellerFeedbackRouter);
 app.use("/api/v1/feedback/getProductFeedback", GetProductFeedbackRouter);
 app.use("/api/v1/feedback/getSellerFilteredFeedback", GetSellerFilteredFeedbackRouter);
+app.use("/api/v1/feedback/getBuyerFeedbacks", GetBuyerFeedbacksRouter);
 
 // Conversation
 app.use("/api/v1/conversation/start", StartConversationRouter);
@@ -304,6 +356,24 @@ app.use("/api/v1/message/search", SearchMessagesRouter);
 // GeneralCustomers
 app.use("/api/v1/generalCustomers/getCustomers", GetCustomersRouter);
 app.use("/api/v1/generalCustomers/getCustomersDetails", GetCustomersDetailsRouter);
+
+//Admin
+app.use("/api/v1/admin/createUser", CreateUserRouter);
+app.use("/api/v1/admin/getUsers", GetUsersRouter);
+app.use("/api/v1/admin/updateUser", UpdateUserRouter);
+app.use("/api/v1/admin/deleteUser", DeleteUserRouter);
+app.use("/api/v1/admin/getOrganizaions", GetOrganizationsRouter);
+app.use("/api/v1/admin/plans", PlansRouter);
+app.use("/api/v1/admin/permissionTypes", PermissionTypesRouter);
+app.use("/api/v1/admin/programPermissions", ProgramPermissionsRouter);
+app.use("/api/v1/admin/planAssignment", PlanAssignmentRouter);
+app.use("/api/v1/admin/getDashboard", GetAdminDashboardRouter);
+app.use("/api/v1/admin/getAllUsers", GetAllUsersRouter);
+
+//Buyer
+app.use("/api/v1/buyer/edit", EditBuyerRouter);
+app.use("/api/v1/buyer/get", GetBuyerRouter);
+app.use("/api/v1/buyer/getDetail", GetBuyerDetails1Router);
 
 
 

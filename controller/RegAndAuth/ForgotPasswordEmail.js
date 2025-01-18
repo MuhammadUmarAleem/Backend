@@ -29,18 +29,24 @@ exports.ForgotPasswordEmail = async (req, res) => {
         const resetLink = `${process.env.FRONTEND_URL}/resetpassword?token=${resetToken}`;
 
         // Send the email with reset link
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: user.email,
-            subject: 'Password Reset Request',
-            html: `
-                <h3>Password Reset Request</h3>
-                <p>Hello,</p>
-                <p>Click the link below to reset your password:</p>
-                <a href="${resetLink}">Reset Link</a>
-                <p>This link will expire in 1 hour.</p>
-            `,
-        });
+await transporter.sendMail({
+    from: `BoudiBox <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: 'Password Reset Request',
+    html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+            <h3 style="color: #444;">Password Reset Request</h3>
+            <p>Hello,</p>
+            <p>You requested to reset your password. Click the button below to reset your password:</p>
+            <p style="text-align: center; margin: 20px 0;">
+                <a href="${resetLink}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+            </p>
+            <p>This link will expire in 1 hour. If you did not request a password reset, please ignore this email or contact support.</p>
+            <p>Thank you,<br>The BoudiBox Team</p>
+        </div>
+    `,
+});
+
 
         // Respond with a success message
         res.status(200).json({ message: 'Password reset email sent' });

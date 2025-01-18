@@ -26,7 +26,7 @@ exports.VerifyEmail = async (req, res) => {
         // Optionally: delete the verification session after successful verification
         await EmailVerificationSession.deleteOne({ uuid });
 
-        res.status(200).json({ message: 'Email successfully verified. Your account is now active.' });
+        res.redirect(`${process.env.FRONTEND_URL}/login`);
 
     } catch (error) {
         console.error('Error verifying email:', error);

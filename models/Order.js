@@ -7,6 +7,36 @@ const orderSchema = new Schema({
         ref: 'User', // Reference to Buyer
         required: true,
     },
+    buyerDetail: {
+        firstname: {
+            type: String,
+            required: true,
+        },
+        companyName: {
+            type: String,
+            required: true,
+        },
+        address: {
+            type: String,
+            required: true,
+        },
+        apartment: {
+            type: String, // Optional
+        },
+        city: {
+            type: String,
+            required: true,
+        },
+        phoneNumber: {
+            type: String,
+            required: true,
+        },
+        email: {
+            type: String,
+            required: true,
+            match: [/.+@.+\..+/, 'Please enter a valid email address'], // Basic email validation
+        },
+    },
     items: [
         {
             productId: {

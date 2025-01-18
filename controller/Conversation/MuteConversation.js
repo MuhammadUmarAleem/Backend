@@ -1,5 +1,5 @@
 const Conversation = require('../../models/Conversation');
-const { wss } = require('../../app'); // Import the WebSocket server
+const { getIO } = require('../../utils/socket'); // Import the getIO function
 
 exports.MuteConversation = async (req, res) => {
     const { conversationId } = req.params;
@@ -24,16 +24,12 @@ exports.MuteConversation = async (req, res) => {
 
         await conversation.save();
 
-        // Notify users in the conversation room
-        wss.clients.forEach((client) => {
-            // Check if the client is connected to the correct room (conversationId)
-            if (client.readyState === WebSocket.OPEN && client.conversationId === conversationId) {
-                client.send(JSON.stringify({
-                    action: 'conversationUpdated',
-                    conversationId,
-                    participant,
-                }));
-            }
+        // Emit an event to notify clients in the conversation room
+        const io = getIO();
+        io.to(conversationId).emit('conversationUpdated', {
+            action: 'muteStatusChanged',
+            conversationId,
+            participant,
         });
 
         res.status(200).json({

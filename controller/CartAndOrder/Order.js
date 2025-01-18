@@ -1,38 +1,46 @@
 const Order = require('../../models/Order');
 const Payment = require('../../models/Payment');
 const Cart = require('../../models/Cart');
-const stripe = require('stripe')('sk_test_51OFsi1IbJoMlvEKENeuoFuDcKJVnaEfgSU5tpbUefLdGGBCYRBcbTMB2pUOBSyUU8uaAWb2rr4g06IoqD2Df5WCX00ySuZfp8h'); // Replace with your Stripe secret key
+const Product = require('../../models/Product');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.Order = async (req, res) => {
-    const { buyerId } = req.body;
+    const { buyerId, products, buyerDetail } = req.body; // products: [{ productId, quantity }], buyerDetail: { firstname, companyName, address, apartment, city, phoneNumber, email }
 
     try {
-        // Step 1: Retrieve the cart for the buyer
-        const cart = await Cart.findOne({ buyerId });
-        if (!cart || !cart.items.length) {
-            return res.status(400).json({ message: 'Cart is empty or does not exist' });
+        // Step 1: Fetch product details
+        const productDetails = await Product.find({
+            _id: { $in: products.map(p => p.productId) }
+        });
+
+        if (productDetails.length !== products.length) {
+            return res.status(400).json({ message: 'Some products were not found' });
         }
 
         // Step 2: Calculate total amount
-        const totalAmount = cart.items.reduce(
-            (total, item) => total + item.quantity * item.price,
-            0
-        );
+        const totalAmount = products.reduce((total, product) => {
+            const productDetail = productDetails.find(p => p._id.equals(product.productId));
+            return total + product.quantity * productDetail.price;
+        }, 0);
 
-        // Step 3: Create the order
+        // Step 3: Create the order with buyer detail
         const newOrder = new Order({
             buyerId,
-            items: cart.items.map(item => ({
-                productId: item.productId,
-                quantity: item.quantity,
-                price: item.price,
-            })),
+            buyerDetail, // Add buyer details
+            items: products.map(product => {
+                const productDetail = productDetails.find(p => p._id.equals(product.productId));
+                return {
+                    productId: product.productId,
+                    quantity: product.quantity,
+                    price: productDetail.price,
+                };
+            }),
             totalAmount,
-            status: 'Pending', // Initially set the order status to 'Pending'
+            status: 'Pending',
         });
         await newOrder.save();
 
-        // Step 4: Record the payment
+        // Step 4: Create the payment record
         const newPayment = new Payment({
             orderId: newOrder._id,
             buyerId,
@@ -45,29 +53,30 @@ exports.Order = async (req, res) => {
         // Step 5: Create a Stripe Checkout session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            line_items: cart.items.map(item => ({
-                price_data: {
-                    currency: 'usd',
-                    product_data: { name: `Product ID: ${item.productId}` },
-                    unit_amount: item.price * 100,
-                },
-                quantity: item.quantity,
-            })),
+            line_items: products.map(product => {
+                const productDetail = productDetails.find(p => p._id.equals(product.productId));
+                return {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: { name: `Product: ${productDetail.productName}` },
+                        unit_amount: productDetail.price * 100,
+                    },
+                    quantity: product.quantity,
+                };
+            }),
             mode: 'payment',
-            success_url: `http://localhost:4000/api/v1/payment/success?orderId=${newOrder._id}&paymentId=${newPayment._id}&cartId=${cart._id}&sessionId={CHECKOUT_SESSION_ID}&buyerId=${buyerId}`, // Pass session ID
-            cancel_url: `https://your-domain.com/payment-cancel`,
+            success_url: `http://localhost:4000/api/v1/payment/success?orderId=${newOrder._id}&paymentId=${newPayment._id}&sessionId={CHECKOUT_SESSION_ID}&buyerId=${buyerId}`,
+            cancel_url: `${process.env.FRONTEND_URL}/buyer/cart`,
             metadata: { orderId: newOrder._id.toString() },
         });
 
-        // Step 6: Update the payment with the session ID
         newPayment.transactionId = session.id;
         await newPayment.save();
 
-        // Step 7: Respond to client with the payment link
         res.status(201).json({
             message: 'Order created and payment link generated successfully',
             order: newOrder,
-            paymentLink: session.url, // Stripe Checkout link
+            paymentLink: session.url,
         });
     } catch (error) {
         console.error('Error creating order:', error);

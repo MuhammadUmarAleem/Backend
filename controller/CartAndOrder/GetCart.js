@@ -26,12 +26,9 @@ exports.GetCart = async (req, res) => {
                     productDetails: product ? {
                         productName: product.productName,
                         description: product.description,
+                        category: product.category,
                         price: product.price,
                         userId: product.userId
-                    } : null,
-                    categoryDetails: category ? {
-                        name: category.name,
-                        availableUnits: category.availableUnits
                     } : null,
                     productImages: images.map(image => image.Image) // Array of image URLs
                 };

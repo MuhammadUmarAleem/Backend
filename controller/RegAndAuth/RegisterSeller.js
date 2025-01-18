@@ -55,9 +55,9 @@ exports.RegisterSeller = async (req, res) => {
         // Check if the user already exists
         const existingUser = await User.findOne({ email });
 
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
+        // if (existingUser) {
+        //     return res.status(400).json({ message: 'User already exists' });
+        // }
 
         // Hash the password
         const hashedPassword = crypto.SHA256(password).toString();

@@ -1,15 +1,15 @@
-const User = require('../../models/User'); // Assuming this is the User model
-const Order = require('../../models/Order');
-const Product = require('../../models/Product');
+const User = require('../../models/User'); // User model
+const Order = require('../../models/Order'); // Order model
+const Product = require('../../models/Product'); // Product model
+const Buyer = require('../../models/Buyer'); // Buyer model
 
 exports.GetCustomers = async (req, res) => {
     try {
-        const { sellerId } = req.params; // Seller ID is passed as a URL parameter
-        const { timeFilter = 0 } = req.query; // Default to today's orders if no timeFilter is provided
+        const { sellerId } = req.params;
+        const { timeFilter = 0 } = req.query;
 
         // Step 1: Get all products sold by this seller
         const sellerProducts = await Product.find({ userId: sellerId });
-
         if (!sellerProducts.length) {
             return res.status(404).json({ message: 'No products found for this seller.' });
         }
@@ -23,25 +23,19 @@ exports.GetCustomers = async (req, res) => {
         if (timeFilter === '1') {
             // No date filter
         } else if (timeFilter === '2') {
-            // Current week filter
             const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
             query.createdAt = { $gte: startOfWeek };
         } else if (timeFilter === '3') {
-            // Current month filter
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
             query.createdAt = { $gte: startOfMonth };
         } else {
-            // Default: Today's filter
             const startOfDay = new Date(now.setHours(0, 0, 0, 0));
             const endOfDay = new Date(now.setHours(23, 59, 59, 999));
             query.createdAt = { $gte: startOfDay, $lte: endOfDay };
         }
 
-        // Step 3: Find orders matching the query
-        const orders = await Order.find(query).populate(
-            'buyerId',
-            '_id username email profile_Picture role active'
-        );
+        // Step 3: Find orders and populate buyerId
+        const orders = await Order.find(query).populate('buyerId');
 
         if (!orders.length) {
             return res.status(404).json({ message: 'No orders found for this seller.' });
@@ -49,16 +43,15 @@ exports.GetCustomers = async (req, res) => {
 
         // Step 4: Aggregate customer data
         const customerData = {};
-
-        orders.forEach(order => {
-            if (order.buyerId) { // Check if buyerId is present
-                const buyerId = order.buyerId._id.toString();
+        for (const order of orders) {
+            if (order.buyerId) {
+                const buyer = await Buyer.findOne({ userId: order.buyerId._id });
+                const userId = order.buyerId._id.toString();
                 const totalAmount = order.totalAmount;
                 const orderDate = order.createdAt;
 
-                if (!customerData[buyerId]) {
-                    // Initialize customer data if not already present
-                    customerData[buyerId] = {
+                if (!customerData[userId]) {
+                    customerData[userId] = {
                         customerDetails: {
                             _id: order.buyerId._id,
                             username: order.buyerId.username,
@@ -66,6 +59,12 @@ exports.GetCustomers = async (req, res) => {
                             profile_Picture: order.buyerId.profile_Picture,
                             role: order.buyerId.role,
                             active: order.buyerId.active,
+                            firstName: buyer?.firstName || null,
+                            lastName: buyer?.lastName || null,
+                            phoneNumber: buyer?.phoneNumber || null,
+                            address: buyer?.address || null,
+                            jobTitle: buyer?.jobTitle || null,
+                            primaryOrganization: buyer?.primaryOrganization || null,
                         },
                         totalSpent: 0,
                         lastOrderAmount: totalAmount,
@@ -73,18 +72,16 @@ exports.GetCustomers = async (req, res) => {
                     };
                 }
 
-                // Update total amount spent
-                customerData[buyerId].totalSpent += totalAmount;
+                customerData[userId].totalSpent += totalAmount;
 
-                // Update last order amount and date if this order is more recent
-                if (orderDate > customerData[buyerId].lastOrderDate) {
-                    customerData[buyerId].lastOrderAmount = totalAmount;
-                    customerData[buyerId].lastOrderDate = orderDate;
+                if (orderDate > customerData[userId].lastOrderDate) {
+                    customerData[userId].lastOrderAmount = totalAmount;
+                    customerData[userId].lastOrderDate = orderDate;
                 }
             }
-        });
+        }
 
-        // Step 5: Convert customerData to an array
+        // Convert customerData to an array
         const result = Object.values(customerData);
 
         res.status(200).json({

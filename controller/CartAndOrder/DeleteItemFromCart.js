@@ -1,70 +1,42 @@
 const Cart = require('../../models/Cart');
-const ProductCategories = require('../../models/ProductCategories');
-const Inventory = require('../../models/Inventory');
+const Product = require('../../models/Product');
 
 exports.DeleteItemFromCart = async (req, res) => {
-    const {
-        buyerId,     // ID of the user
-        productId,   // ID of the product being removed
-        categoryId   // ID of the product category
-    } = req.body;
+    const { buyerId, productId } = req.body; // ID of the user and product to remove
 
     try {
-        // Step 1: Validate the cart item
+        // Find the cart
         const cart = await Cart.findOne({ buyerId });
         if (!cart) {
-            return res.status(404).json({ message: 'Cart not found for this user.' });
+            return res.status(404).json({ message: 'Cart not found' });
         }
 
-        const cartItemIndex = cart.items.findIndex(
-            (item) => item.productId.toString() === productId
-        );
-
-        if (cartItemIndex === -1) {
-            return res.status(404).json({ message: 'Item not found in the cart.' });
+        // Find the item in the cart
+        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+        if (itemIndex === -1) {
+            return res.status(404).json({ message: 'Item not found in cart' });
         }
 
-        const cartItem = cart.items[cartItemIndex];
-        const quantityToRemove = cartItem.quantity;
+        // Retrieve the quantity to restore stock
+        const { quantity } = cart.items[itemIndex];
 
-        // Step 2: Remove the item completely from the cart
-        cart.items.splice(cartItemIndex, 1);
+        // Remove the item from the cart
+        cart.items.splice(itemIndex, 1);
         await cart.save();
 
-        // Step 3: Update inventory
-        const inventory = await Inventory.findOne({ productId });
-        if (!inventory) {
-            return res.status(404).json({ message: 'Inventory not found for this product.' });
+        // Restore stock in the Product table
+        const product = await Product.findById(productId);
+        if (product) {
+            product.stock += quantity;
+            await product.save();
         }
-
-        // Add the removed quantity back to the inventory
-        inventory.stock += quantityToRemove;
-        inventory.status =
-            inventory.stock <= inventory.lowStockThreshold
-                ? 'low-stock'
-                : 'in-stock';
-        await inventory.save();
-
-        // Step 4: Update category-specific stock
-        const category = await ProductCategories.findOne({
-            _id: categoryId,
-            productId,
-        });
-
-        if (!category) {
-            return res.status(404).json({ message: 'Category not found for this product.' });
-        }
-
-        // Add the removed quantity back to the category
-        category.availableUnits += quantityToRemove;
-        await category.save();
 
         res.status(200).json({
             message: 'Item removed from cart successfully!',
             cart,
         });
     } catch (error) {
-        console.error('Error removing item from cart:', error);
+        console.error('Error deleting item from cart:', error);
         res.status(500).json({ message: 'Internal server error', error });
     }
 };
